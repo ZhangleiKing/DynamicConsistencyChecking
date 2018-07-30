@@ -14,6 +14,8 @@ public class Guard {
     @Getter @Setter
     private String body;
 
+    public Guard() {}
+
     public Guard(String id, String body) {
         this.id = id;
         this.body = body;

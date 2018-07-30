@@ -19,6 +19,8 @@ public class InteractionOperand {
     @Getter @Setter
     private List<OccurrenceSpecificationFragment> osFragments;
 
+    public InteractionOperand() {}
+
     public InteractionOperand(String id, Guard guard, List<OccurrenceSpecificationFragment> osFragments) {
         this.id = id;
         this.guard = guard;

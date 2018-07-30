@@ -12,4 +12,14 @@ public class Constants {
     public static final String OCCURRENCE_SPECIFICATION = "OccurrenceSpecification";
 
     public static final String COMBINED_FRAGMENT = "CombinedFragment";
+
+    public static final String MESSAGE = "message";
+
+    public static final String OPERAND = "operand";
+
+    public static final String GUARD = "guard";
+
+    public static final String CF_TYPE_ALT = "alt";
+
+    public static final String CF_TYPE_OPT = "opt";
 }

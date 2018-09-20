@@ -1,4 +1,4 @@
-package com.graduate.zl.sd2Lts.model;
+package com.graduate.zl.sd2Lts.model.SeqDiagram;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -19,11 +19,21 @@ public class InteractionOperand {
     @Getter @Setter
     private List<OccurrenceSpecificationFragment> osFragments;
 
+    @Getter @Setter
+    private String belongCombinedFragmentId;
+
     public InteractionOperand() {}
 
     public InteractionOperand(String id, Guard guard, List<OccurrenceSpecificationFragment> osFragments) {
         this.id = id;
         this.guard = guard;
+        this.osFragments = osFragments;
+    }
+
+    public InteractionOperand(String id, Guard guard, String belongCombinedFragmentId, List<OccurrenceSpecificationFragment> osFragments) {
+        this.id = id;
+        this.guard = guard;
+        this.belongCombinedFragmentId = belongCombinedFragmentId;
         this.osFragments = osFragments;
     }
 

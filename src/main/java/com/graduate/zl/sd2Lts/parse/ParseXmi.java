@@ -1,7 +1,9 @@
 package com.graduate.zl.sd2Lts.parse;
 
 import com.graduate.zl.sd2Lts.common.Constants;
-import com.graduate.zl.sd2Lts.model.*;
+import com.graduate.zl.sd2Lts.model.SeqDiagram.*;
+import lombok.Getter;
+import lombok.Setter;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
@@ -22,21 +24,25 @@ public class ParseXmi {
 
     private Document document;
 
+    @Getter @Setter
     private Map<String, Lifeline> lifelines;
 
-    private List<OccurrenceSpecificationFragment> osFraments;
+    @Getter @Setter
+    private Map<String,  OccurrenceSpecificationFragment> osFragments;
 
-    private List<CombinedFragment> combinedFragments;
+    @Getter @Setter
+    private Map<String, CombinedFragment> combinedFragments;
 
-    private List<Message> messages;
+    @Getter @Setter
+    private Map<String, Message> messages;
 
     public ParseXmi(String fileName) {
         this.fileName = fileName;
         this.document = load();
         this.lifelines = new HashMap<String, Lifeline>();
-        this.messages = new ArrayList<Message>();
-        this.osFraments = new ArrayList<OccurrenceSpecificationFragment>();
-        this.combinedFragments = new ArrayList<CombinedFragment>();
+        this.messages = new HashMap<String, Message>();
+        this.osFragments = new HashMap<String, OccurrenceSpecificationFragment>();
+        this.combinedFragments = new HashMap<String, CombinedFragment>();
     }
 
     public Document load() {
@@ -66,14 +72,16 @@ public class ParseXmi {
             } else if(elementName.equals(Constants.FRAGMENT)) {
                 String type = element.attribute("type").getValue();
                 if(type.equals(Constants.OCCURRENCE_SPECIFICATION)) {
-                    OccurrenceSpecificationFragment osf = new OccurrenceSpecificationFragment(element.attribute("id").getValue(), element.attribute("covered").getValue());
-                    this.osFraments.add(osf);
+                    String osId = element.attribute("id").getValue();
+                    OccurrenceSpecificationFragment osf = new OccurrenceSpecificationFragment(osId, element.attribute("covered").getValue());
+                    this.osFragments.put(osId, osf);
                 }else if(type.equals(Constants.COMBINED_FRAGMENT)){
                     parseCombinedFragment(element);
                 }
             } else if(elementName.equals(Constants.MESSAGE)) {
-                Message message = new Message(element.attribute("id").getValue(), element.attribute("name").getValue(), element.attribute("sendEvent").getValue(), element.attribute("receiveEvent").getValue());
-                this.messages.add(message);
+                String mid = element.attribute("id").getValue();
+                Message message = new Message(mid, element.attribute("name").getValue(), element.attribute("sendEvent").getValue(), element.attribute("receiveEvent").getValue());
+                this.messages.put(mid, message);
             }
         }
     }
@@ -81,7 +89,8 @@ public class ParseXmi {
     private void parseCombinedFragment(Element cf) {
         CombinedFragment ret = new CombinedFragment();
 
-        ret.setId(cf.attribute("id").getValue());
+        String cfId = cf.attribute("id").getValue();
+        ret.setId(cfId);
         ret.setType(cf.attribute("interactionOperator").getValue());
         List<InteractionOperand> retOperands = new ArrayList<InteractionOperand>();
 
@@ -109,7 +118,7 @@ public class ParseXmi {
             }
         }
         ret.setOperandList(retOperands);
-        this.combinedFragments.add(ret);
+        this.combinedFragments.put(cfId, ret);
     }
 
     public static void main(String[] args) {

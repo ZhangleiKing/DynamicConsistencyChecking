@@ -1,4 +1,4 @@
-package com.graduate.zl.sd2Lts.model;
+package com.graduate.zl.sd2Lts.model.SeqDiagram;
 
 import lombok.Getter;
 import lombok.Setter;

@@ -27,6 +27,8 @@ public class ParseXmi {
 
     private Map<String, CombinedFragment> combinedFragments;
 
+    private Map<String, InteractionOperand> interactionOperands;
+
     private Map<String, Message> messages;
 
     @Getter @Setter
@@ -39,6 +41,7 @@ public class ParseXmi {
         this.messages = new LinkedHashMap<String, Message>();
         this.osFragments = new HashMap<String, OccurrenceSpecificationFragment>();
         this.combinedFragments = new HashMap<String, CombinedFragment>();
+        this.interactionOperands = new HashMap<String, InteractionOperand>();
         this.sequenceDiagram = new SequenceDiagram();
     }
 
@@ -97,6 +100,8 @@ public class ParseXmi {
             String elementName = element.getName();
             if(elementName.equals(Constants.OPERAND)) {
                 InteractionOperand operand = new InteractionOperand();
+                String iaoId = element.attribute("id").getValue();
+                operand.setBelongCombinedFragmentId(cfId);
                 List<OccurrenceSpecificationFragment> operandCFs = new ArrayList<OccurrenceSpecificationFragment>();
                 List<Element> opeElements = element.elements();
                 for(Element element1 : opeElements) {
@@ -107,11 +112,16 @@ public class ParseXmi {
                         Guard guard = new Guard(guardId, guardBody);
                         operand.setGuard(guard);
                     }else if(elementName1.equals(Constants.OCCURRENCE_SPECIFICATION)) {
-                        OccurrenceSpecificationFragment osf = new OccurrenceSpecificationFragment(element1.attribute("id").getValue(), element1.attribute("covered").getValue());
+                        String osId = element1.attribute("id").getValue();
+                        OccurrenceSpecificationFragment osf = new OccurrenceSpecificationFragment(osId, element1.attribute("covered").getValue());
+                        osf.setBelongInteractionOperandId(iaoId); //设置operand中的OccurrenceSpecification所属operandId
+                        osf.setBelongToCF(true);
+                        this.osFragments.put(osId, osf);
                         operandCFs.add(osf);
                     }
                 }
                 operand.setOsFragments(operandCFs);
+                this.interactionOperands.put(iaoId, operand);
                 retOperands.add(operand);
             }
         }

@@ -28,6 +28,7 @@ public class InteractionOperand {
         this.id = id;
         this.guard = guard;
         this.osFragments = osFragments;
+        this.belongCombinedFragmentId = null;
     }
 
     public InteractionOperand(String id, Guard guard, String belongCombinedFragmentId, List<OccurrenceSpecificationFragment> osFragments) {

@@ -35,7 +35,7 @@ public class TransformSd2Lts {
         //每一条消息对应两个LNode和一个LTransition，但实际上只用创建一个LNode和一个LTransition（root节点除外）
         for(String key : messageMap.keySet()) {
             Message value = messageMap.get(key);
-            if(value.belongCF(sd) != null) {
+            if(value.getBelongedCF(sd)[0] != null) {
                 if(this.root == null) {
 
                 }else {
@@ -44,7 +44,7 @@ public class TransformSd2Lts {
             }else {
                 if(this.root == null) {
                     nextNumber = count.getAndIncrement();
-                    LNode node = new LNode(nextNumber, value.getSenderName(sd));
+                    LNode node = new LNode(nextNumber, value.getSenderOrReceiverName(sd, true));
                     this.root = node;
                     
                 }else {
@@ -53,6 +53,17 @@ public class TransformSd2Lts {
             }
         }
         return this.root;
+    }
+
+    /**
+     * 将OPT片段处理为LTS
+     * @param cfStart
+     * @param sd
+     * @return
+     */
+    private LNode handleOptCF(LNode cfStart, SequenceDiagram sd) {
+
+        return null;
     }
 
     public LTS getLTS(LNode node) {

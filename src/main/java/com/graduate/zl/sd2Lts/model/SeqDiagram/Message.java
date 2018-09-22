@@ -3,6 +3,8 @@ package com.graduate.zl.sd2Lts.model.SeqDiagram;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Map;
+
 /**
  * Created by Vincent on 2018/7/30.
  */
@@ -20,6 +22,7 @@ public class Message {
     @Getter @Setter
     private String receiveEvent;
 
+
     public Message(String id, String name, String sendEvent, String receiveEvent) {
         this.id = id;
         this.name = name;
@@ -28,30 +31,37 @@ public class Message {
     }
 
     /**
-     * 如果message是CF内的，则返回对应CF的id；否则返回null
-     * 如果message在CF内，则其sendEvent和receiveEvent都在InteractionOperand内
+     * 获取消息发送端或接收端名称
      * @param sd
+     * @param sendSide 如果为true，则表示查询sendEvent的name
      * @return
      */
-    public String belongCF(SequenceDiagram sd) {
-        return null;
+    public String getSenderOrReceiverName(SequenceDiagram sd, boolean sendSide) {
+        Map<String,  OccurrenceSpecificationFragment> osFragments = sd.getOsFragments();
+        OccurrenceSpecificationFragment target = null;
+        if(sendSide)
+            target = osFragments.get(this.getSendEvent());
+        else
+            target = osFragments.get(this.getReceiveEvent());
+        String covered = target.getCoveredId();
+        Map<String, Lifeline> lifelines = sd.getLifelines();
+        return lifelines.get(covered).getName();
     }
 
     /**
-     * 获取消息发送端名称
+     * 根据当前message的eventId（sendEvent或者receiveEvent）查询当前message所属的CF以及operand
+     * ret[0]和ret[1]分别保存CF和InteractionOperand的Id
      * @param sd
      * @return
      */
-    public String getSenderName(SequenceDiagram sd) {
-        return null;
-    }
-
-    /**
-     * 获取消息接收端名称
-     * @param sd
-     * @return
-     */
-    public String getReceiverName(SequenceDiagram sd) {
-        return null;
+    public String[] getBelongedCF(SequenceDiagram sd) {
+        String[] ret = new String[2];
+        ret[0] = ret[1] = null;
+        String sendEvent = this.getSendEvent();
+        if(sd.getOsFragments().get(sendEvent).isBelongToCF()) {
+            ret[1] = sd.getOsFragments().get(sendEvent).getBelongInteractionOperandId();
+            ret[0] = sd.getInteractionOperands().get(ret[1]).getBelongCombinedFragmentId();
+        }
+        return ret;
     }
 }

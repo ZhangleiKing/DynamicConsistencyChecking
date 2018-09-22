@@ -23,6 +23,8 @@ public class OccurrenceSpecificationFragment {
     public OccurrenceSpecificationFragment(String id, String coveredId) {
         this.id = id;
         this.coveredId = coveredId;
+        this.belongInteractionOperandId = null;
+        this.isBelongToCF = false;
     }
 
     public OccurrenceSpecificationFragment(String id, String coveredId, String belongInteractionOperandId, boolean isBelongToCF) {

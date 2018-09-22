@@ -17,6 +17,10 @@ public class SequenceDiagram {
     private Map<String, CombinedFragment> combinedFragments;
 
     @Getter @Setter
+    private Map<String, InteractionOperand> interactionOperands;
+
+    @Getter @Setter
+    // <messageId, message>
     private Map<String, Message> messages;
 
     public SequenceDiagram() {

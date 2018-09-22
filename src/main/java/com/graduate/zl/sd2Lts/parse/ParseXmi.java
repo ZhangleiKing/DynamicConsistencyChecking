@@ -10,10 +10,7 @@ import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by Vincent on 2018/7/27.
@@ -24,28 +21,28 @@ public class ParseXmi {
 
     private Document document;
 
-    @Getter @Setter
     private Map<String, Lifeline> lifelines;
 
-    @Getter @Setter
     private Map<String,  OccurrenceSpecificationFragment> osFragments;
 
-    @Getter @Setter
     private Map<String, CombinedFragment> combinedFragments;
 
-    @Getter @Setter
     private Map<String, Message> messages;
+
+    @Getter @Setter
+    private SequenceDiagram sequenceDiagram;
 
     public ParseXmi(String fileName) {
         this.fileName = fileName;
-        this.document = load();
+        this.document = loadDocument();
         this.lifelines = new HashMap<String, Lifeline>();
-        this.messages = new HashMap<String, Message>();
+        this.messages = new LinkedHashMap<String, Message>();
         this.osFragments = new HashMap<String, OccurrenceSpecificationFragment>();
         this.combinedFragments = new HashMap<String, CombinedFragment>();
+        this.sequenceDiagram = new SequenceDiagram();
     }
 
-    public Document load() {
+    public Document loadDocument() {
         Document document = null;
         try {
             SAXReader saxReader = new SAXReader();
@@ -84,6 +81,7 @@ public class ParseXmi {
                 this.messages.put(mid, message);
             }
         }
+        setSequenceDiagram();
     }
 
     private void parseCombinedFragment(Element cf) {
@@ -119,6 +117,13 @@ public class ParseXmi {
         }
         ret.setOperandList(retOperands);
         this.combinedFragments.put(cfId, ret);
+    }
+
+    private void setSequenceDiagram() {
+        this.sequenceDiagram.setLifelines(this.lifelines);
+        this.sequenceDiagram.setOsFragments(this.osFragments);
+        this.sequenceDiagram.setCombinedFragments(this.combinedFragments);
+        this.sequenceDiagram.setMessages(this.messages);
     }
 
     public static void main(String[] args) {

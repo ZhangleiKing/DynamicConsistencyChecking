@@ -22,4 +22,8 @@ public class Constants {
     public static final String CF_TYPE_ALT = "alt";
 
     public static final String CF_TYPE_OPT = "opt";
+
+    public static final String LTS_START_NODE = "START";
+
+    public static final String LTS_END_NODE = "END";
 }

@@ -29,7 +29,9 @@ public class ParseXmi {
 
     private Map<String, InteractionOperand> interactionOperands;
 
-    private Map<String, Message> messages;
+    private Map<String, Message> messageMap;
+
+    private List<Message> messageList;
 
     @Getter @Setter
     private SequenceDiagram sequenceDiagram;
@@ -37,11 +39,12 @@ public class ParseXmi {
     public ParseXmi(String fileName) {
         this.fileName = fileName;
         this.document = loadDocument();
-        this.lifelines = new HashMap<String, Lifeline>();
-        this.messages = new LinkedHashMap<String, Message>();
-        this.osFragments = new HashMap<String, OccurrenceSpecificationFragment>();
-        this.combinedFragments = new HashMap<String, CombinedFragment>();
-        this.interactionOperands = new HashMap<String, InteractionOperand>();
+        this.lifelines = new HashMap<>();
+        this.messageMap = new HashMap<>();
+        this.messageList = new ArrayList<>();
+        this.osFragments = new HashMap<>();
+        this.combinedFragments = new HashMap<>();
+        this.interactionOperands = new HashMap<>();
         this.sequenceDiagram = new SequenceDiagram();
     }
 
@@ -81,7 +84,8 @@ public class ParseXmi {
             } else if(elementName.equals(Constants.MESSAGE)) {
                 String mid = element.attribute("id").getValue();
                 Message message = new Message(mid, element.attribute("name").getValue(), element.attribute("sendEvent").getValue(), element.attribute("receiveEvent").getValue());
-                this.messages.put(mid, message);
+                this.messageMap.put(mid, message);
+                this.messageList.add(message);
             }
         }
         setSequenceDiagram();
@@ -92,8 +96,9 @@ public class ParseXmi {
 
         String cfId = cf.attribute("id").getValue();
         ret.setId(cfId);
+        ret.setName(cf.attribute("name").getValue());
         ret.setType(cf.attribute("interactionOperator").getValue());
-        List<InteractionOperand> retOperands = new ArrayList<InteractionOperand>();
+        List<InteractionOperand> retOperands = new ArrayList<>();
 
         List<Element> cfElements = cf.elements();
         for(Element element : cfElements) {
@@ -102,7 +107,7 @@ public class ParseXmi {
                 InteractionOperand operand = new InteractionOperand();
                 String iaoId = element.attribute("id").getValue();
                 operand.setBelongCombinedFragmentId(cfId);
-                List<OccurrenceSpecificationFragment> operandCFs = new ArrayList<OccurrenceSpecificationFragment>();
+                List<OccurrenceSpecificationFragment> operandCFs = new ArrayList<>();
                 List<Element> opeElements = element.elements();
                 for(Element element1 : opeElements) {
                     String elementName1 = element1.getName();
@@ -133,7 +138,8 @@ public class ParseXmi {
         this.sequenceDiagram.setLifelines(this.lifelines);
         this.sequenceDiagram.setOsFragments(this.osFragments);
         this.sequenceDiagram.setCombinedFragments(this.combinedFragments);
-        this.sequenceDiagram.setMessages(this.messages);
+        this.sequenceDiagram.setMessageMap(this.messageMap);
+        this.sequenceDiagram.setMessageList(this.messageList);
     }
 
     public static void main(String[] args) {

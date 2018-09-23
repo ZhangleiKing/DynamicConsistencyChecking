@@ -3,6 +3,7 @@ package com.graduate.zl.sd2Lts.model.SeqDiagram;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
 import java.util.Map;
 
 public class SequenceDiagram {
@@ -21,7 +22,10 @@ public class SequenceDiagram {
 
     @Getter @Setter
     // <messageId, message>
-    private Map<String, Message> messages;
+    private Map<String, Message> messageMap;
+
+    @Getter @Setter
+    private List<Message> messageList;
 
     public SequenceDiagram() {
 

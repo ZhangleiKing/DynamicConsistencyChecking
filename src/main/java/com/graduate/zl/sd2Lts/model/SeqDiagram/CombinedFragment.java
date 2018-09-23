@@ -17,6 +17,9 @@ public class CombinedFragment {
     private String type;
 
     @Getter @Setter
+    private String name;
+
+    @Getter @Setter
     private List<InteractionOperand> operandList;
 
 }

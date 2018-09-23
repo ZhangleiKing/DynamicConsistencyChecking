@@ -20,6 +20,6 @@ public class LNode {
     public LNode (int number, String label) {
         this.number = number;
         this.label = label;
-        this.next = new HashMap<LNode, LTransition>();
+        this.next = new HashMap<>();
     }
 }

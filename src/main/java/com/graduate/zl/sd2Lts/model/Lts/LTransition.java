@@ -1,5 +1,6 @@
 package com.graduate.zl.sd2Lts.model.Lts;
 
+import com.graduate.zl.sd2Lts.common.util.RandomId;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -9,18 +10,22 @@ public class LTransition {
     private String tid;
 
     @Getter @Setter
-    private String transName;
+    private LTransitionLabel transLabel;
 
     @Getter @Setter
     private long timestamp;
 
     public LTransition() {
-
+        this(null);
     }
 
-    public LTransition(String tid, String transName, long timestamp) {
+    public LTransition(LTransitionLabel tLabel) {
+        this(RandomId.getRandomId(), tLabel, System.currentTimeMillis());
+    }
+
+    public LTransition(String tid, LTransitionLabel tLabel, long timestamp) {
         this.tid = tid;
-        this.transName = transName;
+        this.transLabel = tLabel;
         this.timestamp = timestamp;
     }
 }

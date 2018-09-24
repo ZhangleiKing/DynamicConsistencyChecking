@@ -35,4 +35,14 @@ public class LTransitionLabel {
         this.condition = condition;
         this.isCF = isCF;
     }
+
+    @Override
+    public String toString() {
+        return "LTransitionLabel{" +
+                "name='" + name + '\'' +
+                ", type='" + type + '\'' +
+                ", condition='" + condition + '\'' +
+                ", isCF=" + isCF +
+                '}';
+    }
 }

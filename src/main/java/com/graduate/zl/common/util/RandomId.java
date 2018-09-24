@@ -1,14 +1,13 @@
-package com.graduate.zl.sd2Lts.common.util;
+package com.graduate.zl.common.util;
 
 import java.util.Random;
 
 public class RandomId {
-    private static Random random;
-    private static String table;
+    private static Random random = new Random();
+    private static String table = "0123456789";
 
     public RandomId() {
-        random = new Random();
-        table = "0123456789";
+
     }
 
     public static String getRandomId() {

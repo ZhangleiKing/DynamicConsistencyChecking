@@ -22,4 +22,12 @@ public class LNode {
         this.label = label;
         this.next = new HashMap<>();
     }
+
+    @Override
+    public String toString() {
+        return "LNode{" +
+                "number=" + number +
+                ", label='" + label + '\'' +
+                '}';
+    }
 }

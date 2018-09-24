@@ -34,22 +34,34 @@ public class TransformSd2Lts {
     public LNode transform(SequenceDiagram sd) {
         Map<String, Message> messageMap = sd.getMessageMap();
         LNode pre = root;
-        int nextNumber, messagePos = 0;
+        int nextNumber;
         //每一条消息对应两个LNode和一个LTransition，但实际上只用创建一个LNode和一个LTransition（root节点除外）
-        for(Message message : sd.getMessageList()) {
+        for(int k=0, size=sd.getMessageList().size(); k<size; k++) {
+            Message message = sd.getMessageList().get(k);
             //如果当前消息属于CF片段
             String[] belongCFAndIO = message.getBelongedCF(sd);
             if(belongCFAndIO[0] != null) {
                 CombinedFragment curCF = sd.getCombinedFragments().get(belongCFAndIO[0]);
+                String cfType = curCF.getType();
                 if(this.root == null) {
-
-                }else {
-                    String cfType = curCF.getType();
+                    nextNumber = count.getAndIncrement();
+                    LNode firstNode = new LNode(nextNumber, message.getSenderOrReceiverName(sd, true));
                     if (cfType.equals(Constants.CF_TYPE_OPT)) {
-                        pre = handleOptCF(pre, curCF, sd, messagePos); //OPT片段处理后返回尾节点，并使pre指向当前尾节点
+                        pre = handleOptCF(firstNode, curCF, sd, k);
                     } else if(cfType.equals(Constants.CF_TYPE_ALT)) {
-                        pre = handleAltCF(pre, curCF, sd, messagePos);
+                        pre = handleAltCF(firstNode, curCF, sd, k);
                     }
+                    this.root = firstNode;
+                }else {
+                    if (cfType.equals(Constants.CF_TYPE_OPT)) {
+                        pre = handleOptCF(pre, curCF, sd, k); //OPT片段处理后返回尾节点，并使pre指向当前尾节点
+                    } else if(cfType.equals(Constants.CF_TYPE_ALT)) {
+                        pre = handleAltCF(pre, curCF, sd, k);
+                    }
+                    Message nextMessage = sd.getMessageList().get(k+1);
+                    LNode gdFin = new LNode(count.getAndIncrement(), nextMessage.getSenderOrReceiverName(sd, true));
+                    pre.getNext().put(gdFin, new LTransition(new LTransitionLabel("FIN", cfType, null, true)));
+                    pre = gdFin;
                 }
             }else {
                 if(this.root == null) {
@@ -67,7 +79,6 @@ public class TransformSd2Lts {
                     pre = nextNode;
                 }
             }
-            messagePos++;
         }
         return this.root;
     }

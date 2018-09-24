@@ -1,6 +1,6 @@
 package com.graduate.zl.sd2Lts.model.Lts;
 
-import com.graduate.zl.sd2Lts.common.util.RandomId;
+import com.graduate.zl.common.util.RandomId;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -27,5 +27,14 @@ public class LTransition {
         this.tid = tid;
         this.transLabel = tLabel;
         this.timestamp = timestamp;
+    }
+
+    @Override
+    public String toString() {
+        return "LTransition{" +
+                "tid='" + tid + '\'' +
+                ", transLabel=" + transLabel +
+                ", timestamp=" + timestamp +
+                '}';
     }
 }

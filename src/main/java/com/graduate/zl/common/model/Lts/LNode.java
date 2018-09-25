@@ -1,4 +1,4 @@
-package com.graduate.zl.sd2Lts.model.Lts;
+package com.graduate.zl.common.model.Lts;
 
 import lombok.Getter;
 import lombok.Setter;

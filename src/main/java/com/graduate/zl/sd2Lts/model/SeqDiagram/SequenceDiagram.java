@@ -30,6 +30,4 @@ public class SequenceDiagram {
     public SequenceDiagram() {
 
     }
-
-
 }

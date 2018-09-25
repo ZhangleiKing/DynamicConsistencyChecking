@@ -1,4 +1,4 @@
-package com.graduate.zl.sd2Lts.model.Lts;
+package com.graduate.zl.common.model.Lts;
 
 import com.graduate.zl.sd2Lts.common.Constants;
 import lombok.Getter;
@@ -15,9 +15,7 @@ public class LTS {
     }
 
     public LNode buildLts(LNode node) {
-        Map<LNode, LTransition> map = this.start.getNext();
-        map.put(node, new LTransition());
-        this.start.setNext(map);
+        this.start.getNext().put(node, new LTransition(new LTransitionLabel(null, null, null, true)));
         return this.start;
     }
 }

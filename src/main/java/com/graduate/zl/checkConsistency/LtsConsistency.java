@@ -1,10 +1,10 @@
 package com.graduate.zl.checkConsistency;
 
 import com.graduate.zl.common.Constants;
-import com.graduate.zl.sd2Lts.model.Lts.LNode;
-import com.graduate.zl.sd2Lts.model.Lts.LTS;
-import com.graduate.zl.sd2Lts.model.Lts.LTransition;
-import com.graduate.zl.sd2Lts.model.Lts.LTransitionLabel;
+import com.graduate.zl.common.model.Lts.LNode;
+import com.graduate.zl.common.model.Lts.LTS;
+import com.graduate.zl.common.model.Lts.LTransition;
+import com.graduate.zl.common.model.Lts.LTransitionLabel;
 
 import java.util.ArrayList;
 import java.util.List;

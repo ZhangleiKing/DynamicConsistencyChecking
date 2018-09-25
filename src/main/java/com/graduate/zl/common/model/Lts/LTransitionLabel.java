@@ -1,4 +1,4 @@
-package com.graduate.zl.sd2Lts.model.Lts;
+package com.graduate.zl.common.model.Lts;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -15,7 +15,8 @@ public class LTransitionLabel {
     private String condition;
 
     @Getter @Setter
-    private boolean isCF;
+    //特殊过渡标识，用于CF开始节点和START节点的transition
+    private boolean isSpecTrans;
 
     public LTransitionLabel () {
         this(null);
@@ -29,11 +30,11 @@ public class LTransitionLabel {
         this(name, type, null, false);
     }
 
-    public LTransitionLabel(String name, String type, String condition, boolean isCF) {
+    public LTransitionLabel(String name, String type, String condition, boolean isSpecTrans) {
         this.name = name;
         this.type = type;
         this.condition = condition;
-        this.isCF = isCF;
+        this.isSpecTrans = isSpecTrans;
     }
 
     @Override
@@ -42,7 +43,7 @@ public class LTransitionLabel {
                 "name='" + name + '\'' +
                 ", type='" + type + '\'' +
                 ", condition='" + condition + '\'' +
-                ", isCF=" + isCF +
+                ", isSpecTrans=" + isSpecTrans +
                 '}';
     }
 }

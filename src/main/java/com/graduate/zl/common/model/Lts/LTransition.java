@@ -23,6 +23,10 @@ public class LTransition {
         this(RandomId.getRandomId(), tLabel, System.currentTimeMillis());
     }
 
+    public LTransition(LTransitionLabel tLabel, long timestamp) {
+        this(RandomId.getRandomId(), tLabel, timestamp);
+    }
+
     public LTransition(String tid, LTransitionLabel tLabel, long timestamp) {
         this.tid = tid;
         this.transLabel = tLabel;

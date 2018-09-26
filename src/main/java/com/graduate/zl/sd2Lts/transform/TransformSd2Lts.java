@@ -9,7 +9,6 @@ import com.graduate.zl.sd2Lts.model.SeqDiagram.*;
 import com.graduate.zl.sd2Lts.parse.ParseXmi;
 
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class TransformSd2Lts {
@@ -20,19 +19,18 @@ public class TransformSd2Lts {
 
     private LNode root = null;
 
-    public TransformSd2Lts() {
-        this.sequenceDiagramPath = "";
+    public TransformSd2Lts(String sdFilePath) {
+        this.sequenceDiagramPath = sdFilePath;
     }
 
-    public LNode transform() {
+    public void transform() {
         ParseXmi parseXmi = new ParseXmi(this.sequenceDiagramPath);
         parseXmi.parseXmi();
         SequenceDiagram sd = parseXmi.getSequenceDiagram();
-        return transform(sd);
+        transform(sd);
     }
 
-    public LNode transform(SequenceDiagram sd) {
-        Map<String, Message> messageMap = sd.getMessageMap();
+    private void transform(SequenceDiagram sd) {
         LNode pre = root;
         int nextNumber;
         //每一条消息对应两个LNode和一个LTransition，但实际上只用创建一个LNode和一个LTransition（root节点除外）
@@ -80,7 +78,6 @@ public class TransformSd2Lts {
                 }
             }
         }
-        return this.root;
     }
 
     /**
@@ -156,8 +153,17 @@ public class TransformSd2Lts {
         return altTail;
     }
 
+    private LNode handleLoopCF(LNode cfStart, CombinedFragment cf, SequenceDiagram sd, int cdMessageStartPos) {
+        return null;
+    }
+
+    private LNode handleBreakCF(LNode cfStart, CombinedFragment cf, SequenceDiagram sd, int cdMessageStartPos) {
+        return null;
+    }
+
     public LTS getLTS(LNode node) {
         LTS lts = new LTS();
+        transform();
         lts.buildLts(node);
         return lts;
     }

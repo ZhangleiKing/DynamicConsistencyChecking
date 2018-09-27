@@ -5,6 +5,9 @@ import lombok.Getter;
 
 import java.util.Map;
 
+/**
+ * LTS模型数据结构
+ */
 public class LTS {
 
     @Getter

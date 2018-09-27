@@ -1,6 +1,6 @@
 package com.graduate.zl.location;
 
-import com.graduate.zl.common.util.PropertiesAccess;
+import com.graduate.zl.location.common.LocConfConstant;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,43 +16,52 @@ import java.util.Map;
  */
 public class GetInfo {
 
-    private final static String projectDirPath = "E:\\Projects\\Java\\DynamicConsistencyChecking";
+    //private final static String projectDirPath = "E:\\Projects\\Java\\DynamicConsistencyChecking";
+    private final static String projectDirPath = "/Users/zhanglei/Documents/projects/Git/DynamicConsistencyChecking";
 
     @Getter @Setter
+    //存储所有module名称的列表
     private List<String> moduleList;
 
     @Getter @Setter
+    //存储每个module下所有的package名称
     private Map<String, List<String>> moduleMapPackages;
 
     @Getter @Setter
+    //存储每个package下所有的class名称
     private Map<String, List<String>> packageMapClazzs;
 
     @Getter @Setter
+    //存储每个class里所有方法的名称（这里的class包括public class和inner class）
     private Map<String, List<String>> clazzMapMethods;
 
     @Getter @Setter
+    //存储每个class里所有的内部类名称
     private Map<String, List<String>> clazzMapInnerClass;
 
     private Map<String, String> locConf;
 
+    //module黑名单列表，用于过滤不需要的module
     private String[] moduleBlackList;
 
     @Getter @Setter
+    //指定的module名称
     private String moduleName;
 
     @Getter @Setter
     private String packageRoot;
 
     public void init() {
-        this.locConf = PropertiesAccess.getAllProperties("location.properties");
+        this.locConf = LocConfConstant.getLocConf();
         this.moduleBlackList = this.locConf.get("module_black_list").split("&");
         this.moduleName = this.locConf.get("target_module");
 
         String[] packageMid = this.locConf.get("packageMid").split("&");
         StringBuilder sb = new StringBuilder();
+        sb.append(projectDirPath+"/"); //在不同操作系统上是不一致的，可能为/或者\\
         sb.append(this.moduleName);
         for(String str : packageMid) {
-            sb.append("\\").append(str);
+            sb.append("/").append(str);
         }
         this.packageRoot = sb.toString();
     }
@@ -142,21 +151,19 @@ public class GetInfo {
         }
     }
 
-    public void test() {
-        System.out.println(this.getClass().getName()); //com.graduate.zl.location.GetInfo
-        System.out.println(Thread.currentThread().getStackTrace()[1].getClassName());
+    public void buildMapInfo() {
+        getModuleList(new File(projectDirPath));
+        getMap(new File(getPackageRoot()), "");
     }
 
     public static void main(String[] args) {
-        File root = new File(projectDirPath);
         GetInfo getInfo = new GetInfo();
+        getInfo.buildMapInfo();
 
-        getInfo.getModuleList(root);
         for(String module : getInfo.getModuleList()) {
             System.out.println("module: " + module);
         }
 
-        getInfo.getMap(new File(getInfo.getPackageRoot()), "");
         for(String modulename : getInfo.getModuleMapPackages().keySet()) {
             System.out.println("module["+modulename+"]: ");
             for(String packagename : getInfo.getModuleMapPackages().get(modulename)) {

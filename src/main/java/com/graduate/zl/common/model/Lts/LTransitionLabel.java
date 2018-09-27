@@ -6,12 +6,15 @@ import lombok.Setter;
 public class LTransitionLabel {
 
     @Getter @Setter
+    //转移动作名称
     private String name;
 
     @Getter @Setter
+    //转移动作类型（msg表示常规消息类型，空或者cf类型则为特殊类型）
     private String type;
 
     @Getter @Setter
+    //若转移动作类型为cf类型，则用condition保存cf的条件
     private String condition;
 
     @Getter @Setter

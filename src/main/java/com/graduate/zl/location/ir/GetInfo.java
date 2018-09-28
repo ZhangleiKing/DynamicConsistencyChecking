@@ -1,4 +1,4 @@
-package com.graduate.zl.location;
+package com.graduate.zl.location.ir;
 
 import com.graduate.zl.location.common.LocConfConstant;
 import lombok.Getter;

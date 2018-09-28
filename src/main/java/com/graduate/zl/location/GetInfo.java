@@ -16,8 +16,7 @@ import java.util.Map;
  */
 public class GetInfo {
 
-    //private final static String projectDirPath = "E:\\Projects\\Java\\DynamicConsistencyChecking";
-    private final static String projectDirPath = "/Users/zhanglei/Documents/projects/Git/DynamicConsistencyChecking";
+    private static String projectDirPath;
 
     @Getter @Setter
     //存储所有module名称的列表
@@ -55,13 +54,14 @@ public class GetInfo {
         this.locConf = LocConfConstant.getLocConf();
         this.moduleBlackList = this.locConf.get("module_black_list").split("&");
         this.moduleName = this.locConf.get("target_module");
+        projectDirPath = this.locConf.get("projectDirPath");
 
         String[] packageMid = this.locConf.get("packageMid").split("&");
         StringBuilder sb = new StringBuilder();
-        sb.append(projectDirPath+"/"); //在不同操作系统上是不一致的，可能为/或者\\
+        sb.append(projectDirPath+"\\"); //在不同操作系统上是不一致的，可能为/或者\\
         sb.append(this.moduleName);
         for(String str : packageMid) {
-            sb.append("/").append(str);
+            sb.append("\\").append(str);
         }
         this.packageRoot = sb.toString();
     }

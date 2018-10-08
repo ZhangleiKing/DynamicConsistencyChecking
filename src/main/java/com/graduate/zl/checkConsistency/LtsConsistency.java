@@ -5,6 +5,7 @@ import com.graduate.zl.common.model.Lts.LNode;
 import com.graduate.zl.common.model.Lts.LTS;
 import com.graduate.zl.common.model.Lts.LTransition;
 import com.graduate.zl.common.model.Lts.LTransitionLabel;
+import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,17 +58,59 @@ public class LtsConsistency {
     }
 
     /**
-     * 规约一致性检查
-     * @param modelPath
-     * @param codeNode
+     * 基于搜索回溯的一致性检查
+     * @param modelLTS
+     * @param codeLTS
      * @param modelToClass
      * @param checkTransition
-     * @param matchLevel
      * @return
      */
-    private static boolean reductionCheck(List<LNodeAndTransition> modelPath, LNode codeNode, Map<String, List<String>> modelToClass, boolean checkTransition, int matchLevel) {
-
-        return false;
+    public static boolean backtrackingCheck(List<LNodeAndTransition> modelLTS, LNode codeLTS, Map<String, List<String>> modelToClass, boolean checkTransition, int mIndex) {
+        if(mIndex >= modelLTS.size()) {
+            if(codeLTS==null)
+                return true;
+            else
+                return false;
+        }
+        LNodeAndTransition curModelNT = modelLTS.get(mIndex);
+        String curModelName = curModelNT.getNode().getLabel();
+        //如果当前模型节点与代码节点能够映射
+        if(modelToClass.get(curModelName).contains(codeLTS.getLabel())) {
+            //如果当前模型节点是最后一个节点
+            if(mIndex == modelLTS.size()-1) {
+                LNode codeNextNode = null;
+                for(LNode node : codeLTS.getNext().keySet()) {
+                    codeNextNode = node;
+                    break;
+                }
+                return backtrackingCheck(modelLTS, codeNextNode, modelToClass, checkTransition, mIndex+1);
+            }else {
+                LNodeAndTransition nextModelNT = modelLTS.get(mIndex+1);
+                //如果当前模型节点和相邻后续节点是相同对象，则需要考虑“向前探索”
+                if(nextModelNT.getNode().getLabel().equals(curModelNT.getNode().getLabel())) {
+                    LNode nextCodeNode = null;
+                    for(LNode cNode : codeLTS.getNext().keySet()) {
+                        nextCodeNode = cNode;
+                        break;
+                    }
+                    return backtrackingCheck(modelLTS, nextCodeNode, modelToClass, checkTransition, mIndex) ||
+                            backtrackingCheck(modelLTS, nextCodeNode, modelToClass, checkTransition, mIndex+1);
+                }else {
+                    //如果当前模型节点和相邻后续节点不是相同对象，则对于代码节点而言，需要考虑“一对多”实现的情况
+                    LNode tmp = codeLTS;
+                    //如果当前代码节点与后续节点映射为同一个对象，则一直向后查找，直到找到一个不相同的为止
+                    while(modelToClass.get(curModelName).contains(tmp.getLabel())) {
+                        for(LNode cNode : tmp.getNext().keySet()) {
+                            tmp = cNode;
+                            break;
+                        }
+                    }
+                    return backtrackingCheck(modelLTS, tmp, modelToClass, checkTransition, mIndex+1);
+                }
+            }
+        }else {
+            return false;
+        }
     }
 
     /**
@@ -176,7 +219,9 @@ public class LtsConsistency {
     }
 
     private static class LNodeAndTransition{
+        @Getter
         private LNode node;
+        @Getter
         private LTransition transition;
 
         public LNodeAndTransition(LNode node, LTransition transition) {
@@ -193,7 +238,13 @@ public class LtsConsistency {
         }
     }
 
-    public static void main(String[] args) {
+    /**
+     * 生产一个LTS，用于测试路径打印
+     * 0->1->2->3->4->5
+     *       |->6->|
+     * @return
+     */
+    public static LNode produceLTS() {
         LNode start = new LNode(0, "start");
         LNode node1 = new LNode(1, "node1");
         LNode node2 = new LNode(2, "node2");
@@ -208,12 +259,110 @@ public class LtsConsistency {
         node4.getNext().put(node5, new LTransition(new LTransitionLabel("node4To5")));
         node2.getNext().put(node6, new LTransition(new LTransitionLabel("node2To6")));
         node6.getNext().put(node4, new LTransition(new LTransitionLabel("node6To4")));
+        return start;
+    }
+
+
+    /**
+     * 产生模型LTS，用于测试一致性检测
+     * A1->B1->B2->C1->B3->A2
+     *     |------>|
+     * @return
+     */
+    public static LNode produceModelLTS() {
+        LNode A1 = new LNode(0, "A");
+        LNode B1 = new LNode(0, "B");
+        LNode B2 = new LNode(0, "B");
+        LNode C1 = new LNode(0, "C");
+        LNode B3 = new LNode(0, "B");
+        LNode A2 = new LNode(0, "A");
+        A1.getNext().put(B1, new LTransition(new LTransitionLabel("msg1")));
+        B1.getNext().put(B2, new LTransition(new LTransitionLabel("msg2")));
+        B2.getNext().put(C1, new LTransition(new LTransitionLabel("msg3")));
+        C1.getNext().put(B3, new LTransition(new LTransitionLabel("msg4")));
+        B3.getNext().put(A2, new LTransition(new LTransitionLabel("msg5")));
+        B1.getNext().put(C1, new LTransition(new LTransitionLabel("msg6")));
+        return A1;
+    }
+
+
+    /**
+     * 产生三条代码执行路径，用于一致性检测
+     * 其中，第一条是无法匹配的；第二条是可匹配的，但不需要“向前探索”；第三条是可匹配的，但需要“向前探索”
+     * @return
+     */
+    public static List<LNode> produceCodeLTS() {
+        List<LNode> ret = new ArrayList<>();
+
+        //A->B->C->B->B,无法匹配任何一条模型分支路径
+        LNode error1 = new LNode(0, "AClass1");
+        LNode error2 = new LNode(1, "BClass1");
+        LNode error3 = new LNode(2, "CClass1");
+        LNode error4 = new LNode(3, "BClass2");
+        LNode error5 = new LNode(4, "BClass3");
+        error1.getNext().put(error2, new LTransition(new LTransitionLabel("msg1")));
+        error2.getNext().put(error3, new LTransition(new LTransitionLabel("msg2")));
+        error3.getNext().put(error4, new LTransition(new LTransitionLabel("msg3")));
+        error4.getNext().put(error5, new LTransition(new LTransitionLabel("msg4")));
+        ret.add(error1);
+
+        //A->A->B->B->C->B->A，可以匹配A->B->B->C->B->A
+        LNode correct1 = new LNode(0, "AClass1");
+        LNode correct2 = new LNode(1, "AClass2");
+        LNode correct3 = new LNode(2, "BClass1");
+        LNode correct4 = new LNode(3, "BClass2");
+        LNode correct5 = new LNode(4, "CClass1");
+        LNode correct6 = new LNode(5, "BClass3");
+        LNode correct7 = new LNode(6, "AClass3");
+        correct1.getNext().put(correct2, new LTransition(new LTransitionLabel("msg1")));
+        correct2.getNext().put(correct3, new LTransition(new LTransitionLabel("msg2")));
+        correct3.getNext().put(correct4, new LTransition(new LTransitionLabel("msg3")));
+        correct4.getNext().put(correct5, new LTransition(new LTransitionLabel("msg4")));
+        correct5.getNext().put(correct6, new LTransition(new LTransitionLabel("msg5")));
+        correct6.getNext().put(correct7, new LTransition(new LTransitionLabel("msg6")));
+        ret.add(correct1);
+
+        //A->B->B->B->B->C->B->A，可以匹配A->B->B->C->B->A
+        LNode correct1FW = new LNode(0, "AClass1");
+        LNode correct2FW = new LNode(1, "BClass1");
+        LNode correct3FW = new LNode(2, "BClass2");
+        LNode correct4FW = new LNode(3, "BClass3");
+        LNode correct5FW = new LNode(4, "BClass4");
+        LNode correct6FW = new LNode(5, "CClass1");
+        LNode correct7FW = new LNode(6, "BClass5");
+        LNode correct8FW = new LNode(7, "AClass2");
+        correct1FW.getNext().put(correct2FW, new LTransition(new LTransitionLabel("msg1")));
+        correct2FW.getNext().put(correct3FW, new LTransition(new LTransitionLabel("msg2")));
+        correct3FW.getNext().put(correct4FW, new LTransition(new LTransitionLabel("msg3")));
+        correct4FW.getNext().put(correct5FW, new LTransition(new LTransitionLabel("msg4")));
+        correct5FW.getNext().put(correct6FW, new LTransition(new LTransitionLabel("msg5")));
+        correct6FW.getNext().put(correct7FW, new LTransition(new LTransitionLabel("msg6")));
+        correct7FW.getNext().put(correct8FW, new LTransition(new LTransitionLabel("msg7")));
+        ret.add(correct1FW);
+
+        return ret;
+    }
+
+    /**
+     * 测试从LTS中获取所有的路径
+     * @param start LTS模型的入口节点
+     */
+    public static void testGetAllPath(LNode start) {
         List<List<LNodeAndTransition>> allPath = getAllPath(start);
+        StringBuilder sb;
         for(List<LNodeAndTransition> path : allPath) {
+            sb = new StringBuilder();
             for(LNodeAndTransition nt : path) {
+                sb.append(nt.getNode().getNumber()+">");
                 System.out.println(nt.toString());
             }
+            System.out.println(sb.substring(0, sb.length()-1));
             System.out.println("---------------------");
         }
+    }
+
+    public static void main(String[] args) {
+        LNode start = produceLTS();
+        testGetAllPath(start);
     }
 }

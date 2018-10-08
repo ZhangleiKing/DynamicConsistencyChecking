@@ -21,6 +21,10 @@ public class LTransitionLabel {
     //特殊过渡标识，用于CF开始节点和START节点的transition
     private boolean isSpecTrans;
 
+//    @Getter @Setter
+//    //用于log构建LTS时使用，标记调用方法所属的类
+//    private String ownedClassName;
+
     public LTransitionLabel () {
         this(null);
     }

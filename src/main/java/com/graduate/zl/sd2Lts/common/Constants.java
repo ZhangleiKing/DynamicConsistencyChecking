@@ -32,4 +32,10 @@ public class Constants {
     public static final String LTS_START_NODE = "START";
 
     public static final String LTS_END_NODE = "END";
+
+    public static final String OPT_CF_END = "OPT_CF_END";
+
+    public static final String ALT_CF_END = "ALT_CF_END";
+
+    public static final String LOOP_CF_END = "LOOP_CF_END";
 }

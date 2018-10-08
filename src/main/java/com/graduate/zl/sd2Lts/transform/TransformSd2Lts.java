@@ -56,10 +56,12 @@ public class TransformSd2Lts {
                     } else if(cfType.equals(Constants.CF_TYPE_ALT)) {
                         pre = handleAltCF(pre, curCF, sd, k);
                     }
-                    Message nextMessage = sd.getMessageList().get(k+1);
-                    LNode gdFin = new LNode(count.getAndIncrement(), nextMessage.getSenderOrReceiverName(sd, true));
-                    pre.getNext().put(gdFin, new LTransition(new LTransitionLabel("FIN", cfType, null, true)));
-                    pre = gdFin;
+                    if(k+1 < size) {
+                        Message nextMessage = sd.getMessageList().get(k+1);
+                        LNode gdNext = new LNode(count.getAndIncrement(), nextMessage.getSenderOrReceiverName(sd, true));
+                        pre.getNext().put(gdNext, new LTransition(new LTransitionLabel(null, null, null, false)));
+                        pre = gdNext;
+                    }
                 }
             }else {
                 if(this.root == null) {
@@ -85,7 +87,7 @@ public class TransformSd2Lts {
      * @param cfStart
      * @param cf
      * @param sd
-     * @param cdMessageStartPos
+     * @param cdMessageStartPos  组合片段第一条消息的位置
      * @return
      */
     private LNode handleOptCF(LNode cfStart, CombinedFragment cf, SequenceDiagram sd, int cdMessageStartPos) {
@@ -105,11 +107,50 @@ public class TransformSd2Lts {
             mv.getNext().put(curNode, new LTransition(new LTransitionLabel(curMessage.getName(), Constants.MESSAGE_TYPE, null, false)));
             mv = curNode;
         }
+        LNode opt_cf_end = new LNode(count.getAndIncrement(), Constants.OPT_CF_END);
+        mv.getNext().put(opt_cf_end, new LTransition(new LTransitionLabel(null, null, null, false)));
+
         LNode gd2 = new LNode(count.getAndIncrement(), cfStart.getLabel());
         cfStart.getNext().put(gd2, new LTransition(new LTransitionLabel(cf.getName(), Constants.CF_TYPE_OPT, "FALSE", true)));
-        gd2.getNext().put(mv, new LTransition(new LTransitionLabel(null, null, null, false)));
-        return mv;
+        gd2.getNext().put(opt_cf_end, new LTransition(new LTransitionLabel(null, null, null, false)));
+
+        return opt_cf_end;
     }
+
+
+//    private LNode handleAltCF(LNode cfStart, CombinedFragment cf, SequenceDiagram sd, int cdMessageStartPos) {
+//        List<Message> messageList = sd.getMessageList();
+//        List<InteractionOperand> curIaOpe = cf.getOperandList(); // ALT片段有2个InteractionOperand
+//
+//        int osf1MsgNumber = curIaOpe.get(0).getOsFragments().size()/2,
+//                osf2Msg2Number = curIaOpe.get(1).getOsFragments().size()/2;
+//        LNode gd1 = new LNode(count.getAndIncrement(), cfStart.getLabel()), mv = gd1;
+//        cfStart.getNext().put(gd1, new LTransition(new LTransitionLabel(cf.getName(), Constants.CF_TYPE_ALT, curIaOpe.get(0).getGuard().getBody(), true)));
+//        Message curMessage; LNode curNode;
+//        for(int i=cdMessageStartPos; i<cdMessageStartPos+osf1MsgNumber; i++) {
+//            curMessage = messageList.get(i);
+//            OccurrenceSpecificationFragment receiveOsf = curIaOpe.get(0).getOsFragments().get((i-cdMessageStartPos)*2+1);
+//            String receiveName = sd.getLifelines().get(receiveOsf.getCoveredId()).getName();
+//            curNode = new LNode(count.getAndIncrement(), receiveName);
+//            mv.getNext().put(curNode, new LTransition(new LTransitionLabel(curMessage.getName(), Constants.MESSAGE_TYPE, null, false)));
+//            mv = curNode;
+//        }
+//        LNode alt_cf_end = new LNode(count.getAndIncrement(), "ALT_CF_END");
+//        mv.getNext().put(alt_cf_end, new LTransition(new LTransitionLabel(null, null, null, false)));
+//
+//        LNode gd2 = new LNode(count.getAndIncrement(), cfStart.getLabel()); mv = gd2;
+//        cfStart.getNext().put(gd2, new LTransition(new LTransitionLabel(cf.getName(), Constants.CF_TYPE_ALT, curIaOpe.get(1).getGuard().getBody(), true)));
+//        for(int i=cdMessageStartPos+osf1MsgNumber; i<cdMessageStartPos+osf1MsgNumber+osf2Msg2Number; i++) {
+//            curMessage = messageList.get(i);
+//            OccurrenceSpecificationFragment receiveOsf = curIaOpe.get(1).getOsFragments().get((i-cdMessageStartPos)*2+1);
+//            String receiveName = sd.getLifelines().get(receiveOsf.getCoveredId()).getName();
+//            curNode = new LNode(count.getAndIncrement(), receiveName);
+//            mv.getNext().put(curNode, new LTransition(new LTransitionLabel(curMessage.getName(), Constants.MESSAGE_TYPE, null, false)));
+//            mv = curNode;
+//        }
+//        mv.getNext().put(alt_cf_end, new LTransition(new LTransitionLabel(null, null, null, false)));
+//        return alt_cf_end;
+//    }
 
     /**
      * 处理Alt片段
@@ -121,40 +162,72 @@ public class TransformSd2Lts {
      */
     private LNode handleAltCF(LNode cfStart, CombinedFragment cf, SequenceDiagram sd, int cdMessageStartPos) {
         List<Message> messageList = sd.getMessageList();
-        List<InteractionOperand> curIaOpe = cf.getOperandList(); // ALT片段有2个InteractionOperand
+        List<InteractionOperand> curIaOpe = cf.getOperandList(); // ALT片段有2个及以上的InteractionOperand
 
-        int osf1MsgNumber = curIaOpe.get(0).getOsFragments().size()/2,
-                osf2Msg2Number = curIaOpe.get(1).getOsFragments().size()/2;
-        LNode gd1 = new LNode(count.getAndIncrement(), cfStart.getLabel()), mv = gd1;
-        cfStart.getNext().put(gd1, new LTransition(new LTransitionLabel(cf.getName(), Constants.CF_TYPE_ALT, curIaOpe.get(0).getGuard().getBody(), true)));
-        Message curMessage; LNode curNode;
-        for(int i=cdMessageStartPos; i<cdMessageStartPos+osf1MsgNumber; i++) {
-            curMessage = messageList.get(i);
-            OccurrenceSpecificationFragment receiveOsf = curIaOpe.get(0).getOsFragments().get((i-cdMessageStartPos)*2+1);
-            String receiveName = sd.getLifelines().get(receiveOsf.getCoveredId()).getName();
-            curNode = new LNode(count.getAndIncrement(), receiveName);
-            mv.getNext().put(curNode, new LTransition(new LTransitionLabel(curMessage.getName(), Constants.MESSAGE_TYPE, null, false)));
-            mv = curNode;
+        int curSum = cdMessageStartPos;
+        LNode gdFirst, mv, curNode, alt_cf_end = null;
+        Message curMessage;
+        for(int i=0, iopSize = curIaOpe.size(); i<iopSize; i++) {
+            int osfMsgNumber = curIaOpe.get(i).getOsFragments().size()/2;
+            gdFirst = new LNode(count.getAndIncrement(), cfStart.getLabel());
+            mv = gdFirst;
+            cfStart.getNext().put(gdFirst, new LTransition(new LTransitionLabel(cf.getName(), Constants.CF_TYPE_ALT, curIaOpe.get(i).getGuard().getBody(), true)));
+            for(int j=curSum; j<curSum+osfMsgNumber; j++) {
+                curMessage = messageList.get(i);
+                OccurrenceSpecificationFragment receiveOsf = curIaOpe.get(0).getOsFragments().get((j-cdMessageStartPos)*2+1);
+                String receiveName = sd.getLifelines().get(receiveOsf.getCoveredId()).getName();
+                curNode = new LNode(count.getAndIncrement(), receiveName);
+                mv.getNext().put(curNode, new LTransition(new LTransitionLabel(curMessage.getName(), Constants.MESSAGE_TYPE, null, false)));
+                mv = curNode;
+            }
+            if(alt_cf_end == null) {
+                alt_cf_end = new LNode(count.getAndIncrement(), Constants.ALT_CF_END);
+            }
+            mv.getNext().put(alt_cf_end, new LTransition(new LTransitionLabel(null, null, null, false)));
+            curSum += osfMsgNumber;
         }
-        LNode altTail = new LNode(count.getAndIncrement(), "ALT_CF_END");
-        mv.getNext().put(altTail, new LTransition(new LTransitionLabel(null, Constants.CF_TYPE_ALT, null, true)));
-
-        LNode gd2 = new LNode(count.getAndIncrement(), cfStart.getLabel()); mv = gd2;
-        cfStart.getNext().put(gd2, new LTransition(new LTransitionLabel(cf.getName(), Constants.CF_TYPE_ALT, curIaOpe.get(1).getGuard().getBody(), true)));
-        for(int i=cdMessageStartPos+osf1MsgNumber; i<cdMessageStartPos+osf1MsgNumber+osf2Msg2Number; i++) {
-            curMessage = messageList.get(i);
-            OccurrenceSpecificationFragment receiveOsf = curIaOpe.get(1).getOsFragments().get((i-cdMessageStartPos)*2+1);
-            String receiveName = sd.getLifelines().get(receiveOsf.getCoveredId()).getName();
-            curNode = new LNode(count.getAndIncrement(), receiveName);
-            mv.getNext().put(curNode, new LTransition(new LTransitionLabel(curMessage.getName(), Constants.MESSAGE_TYPE, null, false)));
-            mv = curNode;
-        }
-        mv.getNext().put(altTail, new LTransition(new LTransitionLabel(null, Constants.CF_TYPE_ALT, null, true)));
-        return altTail;
+        return alt_cf_end;
     }
 
     private LNode handleLoopCF(LNode cfStart, CombinedFragment cf, SequenceDiagram sd, int cdMessageStartPos) {
-        return null;
+        List<Message> messageList = sd.getMessageList();
+
+        InteractionOperand iaOpe = cf.getOperandList().get(0); //LOOP片段只有1个InteractionOperand
+        List<OccurrenceSpecificationFragment> curOSF = iaOpe.getOsFragments();
+        int messageNumber = curOSF.size() / 2;
+
+        String condition = iaOpe.getGuard().getBody();//loop条件符合这样的形式：“n=x;n<(>)N;n+(-)=k”
+        String[] conditionPart = condition.split(";");
+        int initValue = Integer.parseInt(conditionPart[0].split("=")[1]),
+                maxValue = Integer.parseInt(conditionPart[1].contains("<") ? conditionPart[1].split("<")[1] : conditionPart[1].split(">")[1]);
+        int step = Integer.parseInt(conditionPart[2].split("=")[1]);
+        step = conditionPart[2].contains("-") ? step*-1 : step;
+
+        LNode gd1 = new LNode(count.getAndIncrement(), cfStart.getLabel()), mv = gd1;
+        cfStart.getNext().put(gd1, new LTransition(new LTransitionLabel(cf.getName(), Constants.CF_TYPE_LOOP, condition, true)));
+
+        for(int k=initValue; k<maxValue; k+=step) {
+            for(int i=cdMessageStartPos; i<cdMessageStartPos+messageNumber; i++) {
+                Message curMessage = messageList.get(i);
+                OccurrenceSpecificationFragment receiveOsf = curOSF.get((i-cdMessageStartPos)*2+1);
+                String receiveName = sd.getLifelines().get(receiveOsf.getCoveredId()).getName();
+                LNode curNode = new LNode(count.getAndIncrement(), receiveName);
+                mv.getNext().put(curNode, new LTransition(new LTransitionLabel(curMessage.getName(), Constants.MESSAGE_TYPE, null, false)));
+                mv = curNode;
+            }
+            if(k != maxValue-1) {
+                LNode cycle = new LNode(count.getAndIncrement(), gd1.getLabel());
+                mv.getNext().put(cycle, new LTransition(new LTransitionLabel(null, Constants.CF_TYPE_LOOP, null, true)));
+                mv = cycle;
+            }
+        }
+        LNode loop_cf_end = new LNode(count.getAndIncrement(), Constants.LOOP_CF_END);
+        mv.getNext().put(loop_cf_end, new LTransition(new LTransitionLabel(null, null, null, false)));
+
+        LNode gd2 = new LNode(count.getAndIncrement(), cfStart.getLabel());
+        cfStart.getNext().put(gd2, new LTransition(new LTransitionLabel(cf.getName(), Constants.CF_TYPE_LOOP, "NOT"+condition, true)));
+        gd2.getNext().put(loop_cf_end, new LTransition(new LTransitionLabel(null, null, null, false)));
+        return loop_cf_end;
     }
 
     private LNode handleBreakCF(LNode cfStart, CombinedFragment cf, SequenceDiagram sd, int cdMessageStartPos) {

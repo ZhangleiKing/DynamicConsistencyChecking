@@ -2,6 +2,7 @@ package com.graduate.zl.common.model.Lts;
 
 import com.graduate.zl.sd2Lts.common.Constants;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.util.Map;
 
@@ -10,7 +11,7 @@ import java.util.Map;
  */
 public class LTS {
 
-    @Getter
+    @Getter @Setter
     private LNode start;
 
     public LTS() {

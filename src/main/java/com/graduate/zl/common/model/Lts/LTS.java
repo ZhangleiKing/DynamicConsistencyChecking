@@ -15,11 +15,11 @@ public class LTS {
     private LNode start;
 
     public LTS() {
-        this.start = new LNode(0, Constants.LTS_START_NODE);
+
     }
 
     public LNode buildLts(LNode node) {
-        this.start.getNext().put(node, new LTransition(new LTransitionLabel(null, null, null, true)));
+        this.start = node;
         return this.start;
     }
 }

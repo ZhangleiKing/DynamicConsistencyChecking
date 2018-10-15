@@ -9,9 +9,9 @@ public class Constants {
 
     public static final String FRAGMENT = "fragment";
 
-    public static final String OCCURRENCE_SPECIFICATION = "OccurrenceSpecification";
+    public static final String OCCURRENCE_SPECIFICATION = "uml:OccurrenceSpecification";
 
-    public static final String COMBINED_FRAGMENT = "CombinedFragment";
+    public static final String COMBINED_FRAGMENT = "uml:CombinedFragment";
 
     public static final String MESSAGE = "message";
 
@@ -38,4 +38,6 @@ public class Constants {
     public static final String ALT_CF_END = "ALT_CF_END";
 
     public static final String LOOP_CF_END = "LOOP_CF_END";
+
+    public static final String BREAK_CF_END = "BREAK_CF_END";
 }

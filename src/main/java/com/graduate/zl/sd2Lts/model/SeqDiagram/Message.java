@@ -30,6 +30,16 @@ public class Message {
         this.receiveEvent = receiveEvent;
     }
 
+    @Override
+    public String toString() {
+        return "Message{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", sendEvent='" + sendEvent + '\'' +
+                ", receiveEvent='" + receiveEvent + '\'' +
+                '}';
+    }
+
     /**
      * 获取消息发送端或接收端名称
      * @param sd
@@ -56,7 +66,6 @@ public class Message {
      */
     public String[] getBelongedCF(SequenceDiagram sd) {
         String[] ret = new String[2];
-        ret[0] = ret[1] = null;
         String sendEvent = this.getSendEvent();
         if(sd.getOsFragments().get(sendEvent).isBelongToCF()) {
             ret[1] = sd.getOsFragments().get(sendEvent).getBelongInteractionOperandId();

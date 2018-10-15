@@ -13,7 +13,7 @@ import java.io.File;
 import java.util.*;
 
 /**
- * Created by Vincent on 2018/7/27.
+ * 解析XMI文件
  */
 public class ParseXmi {
 
@@ -63,9 +63,9 @@ public class ParseXmi {
         Element root = this.document.getRootElement();
         List<Element> firstLevel = root.elements();
         Element UML_MODEL = firstLevel.get(1);
-        Element UML_PACKAGE = (Element) UML_MODEL.elements().get(0);
-        Element UML_COLLABORATION = (Element) UML_PACKAGE.elements().get(0);
-        Element ownedBehavior = (Element) UML_COLLABORATION.elements().get(0);
+        Element ownedBehavior = (Element) UML_MODEL.elements().get(0);
+        while(ownedBehavior.getName().equals("packagedElement"))
+            ownedBehavior = (Element) ownedBehavior.elements().get(0);
         List<Element> allElements = ownedBehavior.elements();
         for(Element element : allElements) {
             String elementName = element.getName();
@@ -106,6 +106,7 @@ public class ParseXmi {
             if(elementName.equals(Constants.OPERAND)) {
                 InteractionOperand operand = new InteractionOperand();
                 String iaoId = element.attribute("id").getValue();
+                operand.setId(iaoId);
                 operand.setBelongCombinedFragmentId(cfId);
                 List<OccurrenceSpecificationFragment> operandCFs = new ArrayList<>();
                 List<Element> opeElements = element.elements();
@@ -113,10 +114,14 @@ public class ParseXmi {
                     String elementName1 = element1.getName();
                     if(elementName1.equals(Constants.GUARD)) {
                         String guardId = element1.attribute("id").getValue();
-                        String guardBody = ((Element)(element1.elements().get(0))).attribute("body").getValue();
+                        String guardBody = "";
+                        Element guardOpaqueExpression = (Element)(element1.elements().get(0));
+                        if(guardOpaqueExpression.attribute("body") != null) {
+                            guardBody = guardOpaqueExpression.attribute("body").getValue();
+                        }
                         Guard guard = new Guard(guardId, guardBody);
                         operand.setGuard(guard);
-                    }else if(elementName1.equals(Constants.OCCURRENCE_SPECIFICATION)) {
+                    }else if(elementName1.equals(Constants.FRAGMENT)) {
                         String osId = element1.attribute("id").getValue();
                         OccurrenceSpecificationFragment osf = new OccurrenceSpecificationFragment(osId, element1.attribute("covered").getValue());
                         osf.setBelongInteractionOperandId(iaoId); //设置operand中的OccurrenceSpecification所属operandId
@@ -140,10 +145,12 @@ public class ParseXmi {
         this.sequenceDiagram.setCombinedFragments(this.combinedFragments);
         this.sequenceDiagram.setMessageMap(this.messageMap);
         this.sequenceDiagram.setMessageList(this.messageList);
+        this.sequenceDiagram.setInteractionOperands(this.interactionOperands);
     }
 
     public static void main(String[] args) {
-        ParseXmi parseXmi = new ParseXmi("C:\\Users\\Vincent\\Desktop\\test.xml");
+        ParseXmi parseXmi = new ParseXmi("C:\\Users\\Vincent\\Desktop\\ATMPingEcho.xml");
         parseXmi.parseXmi();
+        System.out.println(parseXmi.getSequenceDiagram().getLifelines().size());
     }
 }

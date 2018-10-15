@@ -15,9 +15,11 @@ public class TransformSd2Lts {
 
     private String sequenceDiagramPath;
 
-    private AtomicInteger count = new AtomicInteger(1);
+    private AtomicInteger count = new AtomicInteger(0);
 
     private LNode root = null;
+
+    private int skip = 0;
 
     public TransformSd2Lts(String sdFilePath) {
         this.sequenceDiagramPath = sdFilePath;
@@ -46,16 +48,22 @@ public class TransformSd2Lts {
                     LNode firstNode = new LNode(nextNumber, message.getSenderOrReceiverName(sd, true));
                     if (cfType.equals(Constants.CF_TYPE_OPT)) {
                         pre = handleOptCF(firstNode, curCF, sd, k);
+                        k += (skip-1);
                     } else if(cfType.equals(Constants.CF_TYPE_ALT)) {
                         pre = handleAltCF(firstNode, curCF, sd, k);
+                        k += (skip-1);
                     }
+                    skip = 0;
                     this.root = firstNode;
                 }else {
                     if (cfType.equals(Constants.CF_TYPE_OPT)) {
                         pre = handleOptCF(pre, curCF, sd, k); //OPT片段处理后返回尾节点，并使pre指向当前尾节点
+                        k += (skip-1);
                     } else if(cfType.equals(Constants.CF_TYPE_ALT)) {
                         pre = handleAltCF(pre, curCF, sd, k);
+                        k += (skip-1);
                     }
+                    skip = 0;
                     if(k+1 < size) {
                         Message nextMessage = sd.getMessageList().get(k+1);
                         LNode gdNext = new LNode(count.getAndIncrement(), nextMessage.getSenderOrReceiverName(sd, true));
@@ -96,6 +104,7 @@ public class TransformSd2Lts {
         InteractionOperand iaOpe = cf.getOperandList().get(0); //OPT片段只有1个InteractionOperand
         List<OccurrenceSpecificationFragment> curOSF = iaOpe.getOsFragments();
         int messageNumber = curOSF.size() / 2;
+        this.skip = messageNumber;
         LNode gd1 = new LNode(count.getAndIncrement(), cfStart.getLabel()), mv = gd1;
         cfStart.getNext().put(gd1, new LTransition(new LTransitionLabel(cf.getName(), Constants.CF_TYPE_OPT, "TRUE", true)));
 
@@ -169,6 +178,7 @@ public class TransformSd2Lts {
         Message curMessage;
         for(int i=0, iopSize = curIaOpe.size(); i<iopSize; i++) {
             int osfMsgNumber = curIaOpe.get(i).getOsFragments().size()/2;
+            this.skip += osfMsgNumber;
             gdFirst = new LNode(count.getAndIncrement(), cfStart.getLabel());
             mv = gdFirst;
             cfStart.getNext().put(gdFirst, new LTransition(new LTransitionLabel(cf.getName(), Constants.CF_TYPE_ALT, curIaOpe.get(i).getGuard().getBody(), true)));
@@ -189,6 +199,14 @@ public class TransformSd2Lts {
         return alt_cf_end;
     }
 
+    /**
+     * 处理Loop片段
+     * @param cfStart
+     * @param cf
+     * @param sd
+     * @param cdMessageStartPos
+     * @return
+     */
     private LNode handleLoopCF(LNode cfStart, CombinedFragment cf, SequenceDiagram sd, int cdMessageStartPos) {
         List<Message> messageList = sd.getMessageList();
 
@@ -230,14 +248,55 @@ public class TransformSd2Lts {
         return loop_cf_end;
     }
 
+    /**
+     * 处理break片段
+     * @param cfStart
+     * @param cf
+     * @param sd
+     * @param cdMessageStartPos
+     * @return
+     */
     private LNode handleBreakCF(LNode cfStart, CombinedFragment cf, SequenceDiagram sd, int cdMessageStartPos) {
-        return null;
+        List<Message> messageList = sd.getMessageList();
+
+        InteractionOperand iaOpe = cf.getOperandList().get(0); //BREAK片段只有1个InteractionOperand
+        List<OccurrenceSpecificationFragment> curOSF = iaOpe.getOsFragments();
+        int messageNumber = curOSF.size() / 2;
+        LNode gd1 = new LNode(count.getAndIncrement(), cfStart.getLabel()), mv = gd1;
+        cfStart.getNext().put(gd1, new LTransition(new LTransitionLabel(cf.getName(), Constants.CF_TYPE_BREAK, iaOpe.getGuard().getBody(), true)));
+        for(int i=cdMessageStartPos; i<messageNumber+cdMessageStartPos; i++) {
+            Message curMessage = messageList.get(i);
+            OccurrenceSpecificationFragment receiveOsf = curOSF.get((i-cdMessageStartPos)*2+1);
+            String receiveName = sd.getLifelines().get(receiveOsf.getCoveredId()).getName();
+            LNode curNode = new LNode(count.getAndIncrement(), receiveName);
+            mv.getNext().put(curNode, new LTransition(new LTransitionLabel(curMessage.getName(), Constants.MESSAGE_TYPE, null, false)));
+            mv = curNode;
+        }
+        LNode break_cf_end = new LNode(count.getAndIncrement(), Constants.BREAK_CF_END);
+        mv.getNext().put(break_cf_end, new LTransition(new LTransitionLabel(null, null, null, false)));
+
+        LNode gd2 = new LNode(count.getAndIncrement(), cfStart.getLabel());
+        mv = gd2;
+        cfStart.getNext().put(gd2, new LTransition(new LTransitionLabel(cf.getName(), Constants.CF_TYPE_BREAK, "NOT"+iaOpe.getGuard().getBody(), true)));
+        Message nextMsg = messageList.get(messageNumber+cdMessageStartPos);
+        LNode nextMsgSender = new LNode(count.getAndIncrement(), nextMsg.getSenderOrReceiverName(sd, true));
+        mv.getNext().put(nextMsgSender, new LTransition(new LTransitionLabel(null, null, null, false)));
+        mv = nextMsgSender;
+        for(int i=messageNumber+cdMessageStartPos; i<messageList.size(); i++) {
+            Message curMsg = messageList.get(i);
+            LNode curNode = new LNode(count.getAndIncrement(), curMsg.getSenderOrReceiverName(sd, false));
+            mv.getNext().put(curNode, new LTransition(new LTransitionLabel(curMsg.getName(), Constants.MESSAGE_TYPE, null, false)));
+            mv = curNode;
+        }
+        break_cf_end.getNext().put(mv, new LTransition(new LTransitionLabel(null, null, null, false)));
+        this.skip = messageList.size()-cdMessageStartPos;
+        return break_cf_end;
     }
 
-    public LTS getLTS(LNode node) {
+    public LTS getLTS() {
         LTS lts = new LTS();
         transform();
-        lts.buildLts(node);
+        lts.buildLts(this.root);
         return lts;
     }
 }

@@ -8,6 +8,7 @@ import com.graduate.zl.common.model.Lts.LTransitionLabel;
 import lombok.Getter;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -72,6 +73,10 @@ public class LtsConsistency {
             else
                 return false;
         }
+        if(codeLTS == null) {
+            if(mIndex < modelLTS.size())
+                return false;
+        }
         LNodeAndTransition curModelNT = modelLTS.get(mIndex);
         String curModelName = curModelNT.getNode().getLabel();
         //如果当前模型节点与代码节点能够映射
@@ -100,6 +105,10 @@ public class LtsConsistency {
                     LNode tmp = codeLTS;
                     //如果当前代码节点与后续节点映射为同一个对象，则一直向后查找，直到找到一个不相同的为止
                     while(modelToClass.get(curModelName).contains(tmp.getLabel())) {
+                        if(tmp.getNext().size() == 0) {
+                            tmp = null;
+                            break;
+                        }
                         for(LNode cNode : tmp.getNext().keySet()) {
                             tmp = cNode;
                             break;
@@ -240,8 +249,9 @@ public class LtsConsistency {
 
     /**
      * 生产一个LTS，用于测试路径打印
-     * 0->1->2->3->4->5
-     *       |->6->|
+     * 0->1->2->3->4->5->6->7->8
+     *       |->9->|  |---->|
+     * 该LTS一共包括4条分支路径
      * @return
      */
     public static LNode produceLTS() {
@@ -252,13 +262,20 @@ public class LtsConsistency {
         LNode node4 = new LNode(4, "node4");
         LNode node5 = new LNode(5, "node5");
         LNode node6 = new LNode(6, "node6");
+        LNode node7 = new LNode(7, "node7");
+        LNode node8 = new LNode(8, "node8");
+        LNode node9 = new LNode(9, "node9");
         start.getNext().put(node1, new LTransition(new LTransitionLabel("startTo1")));
         node1.getNext().put(node2, new LTransition(new LTransitionLabel("node1To2")));
         node2.getNext().put(node3, new LTransition(new LTransitionLabel("node2To3")));
         node3.getNext().put(node4, new LTransition(new LTransitionLabel("node3To4")));
         node4.getNext().put(node5, new LTransition(new LTransitionLabel("node4To5")));
-        node2.getNext().put(node6, new LTransition(new LTransitionLabel("node2To6")));
-        node6.getNext().put(node4, new LTransition(new LTransitionLabel("node6To4")));
+        node2.getNext().put(node9, new LTransition(new LTransitionLabel("node2To9")));
+        node9.getNext().put(node4, new LTransition(new LTransitionLabel("node9To4")));
+        node5.getNext().put(node6, new LTransition(new LTransitionLabel("node5To6")));
+        node6.getNext().put(node7, new LTransition(new LTransitionLabel("node6To7")));
+        node7.getNext().put(node8, new LTransition(new LTransitionLabel("node7To8")));
+        node5.getNext().put(node7, new LTransition(new LTransitionLabel("node5To7")));
         return start;
     }
 
@@ -344,6 +361,26 @@ public class LtsConsistency {
     }
 
     /**
+     * 产生模型对象到代码类的映射，用于测试一致性
+     * @return
+     */
+    public static Map<String, List<String>> produceModelMapClass() {
+        Map<String, List<String>> modelMapClass = new HashMap<>();
+        List<String> al = new ArrayList<>();
+        List<String> bl = new ArrayList<>();
+        List<String> cl = new ArrayList<>();
+        for(int i=1;i<=5;i++) {
+            al.add("AClass"+String.valueOf(i));
+            bl.add("BClass"+String.valueOf(i));
+            cl.add("CClass"+String.valueOf(i));
+        }
+        modelMapClass.put("A", al);
+        modelMapClass.put("B", bl);
+        modelMapClass.put("C", cl);
+        return modelMapClass;
+    }
+
+    /**
      * 测试从LTS中获取所有的路径
      * @param start LTS模型的入口节点
      */
@@ -361,8 +398,34 @@ public class LtsConsistency {
         }
     }
 
+    public static void testCheckConsistency() {
+        Map<String, List<String>> modelToClass = produceModelMapClass();
+
+        List<LNode> codePathList = produceCodeLTS();
+
+        LNode modelLTS = produceModelLTS();
+        List<List<LNodeAndTransition>> modelPaths = getAllPath(modelLTS);
+        for(LNode codePath : codePathList) {
+            boolean match = false;
+            for(List<LNodeAndTransition> modelPath : modelPaths) {
+                if(backtrackingCheck(modelPath, codePath, modelToClass, true, 0)) {
+                    match = true;
+                    break;
+                }
+            }
+            if(match) {
+                System.out.println("当前代码执行路径与模型路径符合一致性检测");
+            }else {
+                System.out.println("当前代码执行路径与模型路径不符合一致性检测");
+            }
+        }
+    }
+
     public static void main(String[] args) {
-        LNode start = produceLTS();
-        testGetAllPath(start);
+        //测试获取全部分支路径
+        testGetAllPath(produceLTS());
+
+        //测试一致性检测，包括三种情况
+//        testCheckConsistency();
     }
 }

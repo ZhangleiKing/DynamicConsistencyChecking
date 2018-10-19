@@ -184,7 +184,7 @@ public class TransformSd2Lts {
             cfStart.getNext().put(gdFirst, new LTransition(new LTransitionLabel(cf.getName(), Constants.CF_TYPE_ALT, curIaOpe.get(i).getGuard().getBody(), true)));
             for(int j=curSum; j<curSum+osfMsgNumber; j++) {
                 curMessage = messageList.get(i);
-                OccurrenceSpecificationFragment receiveOsf = curIaOpe.get(0).getOsFragments().get((j-cdMessageStartPos)*2+1);
+                OccurrenceSpecificationFragment receiveOsf = curIaOpe.get(i).getOsFragments().get((j-curSum)*2+1);
                 String receiveName = sd.getLifelines().get(receiveOsf.getCoveredId()).getName();
                 curNode = new LNode(count.getAndIncrement(), receiveName);
                 mv.getNext().put(curNode, new LTransition(new LTransitionLabel(curMessage.getName(), Constants.MESSAGE_TYPE, null, false)));

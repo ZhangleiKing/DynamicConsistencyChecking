@@ -37,7 +37,7 @@ public class InformationRetrieval {
     }
 
     public void executeIR() {
-        GetInfo info = new GetInfo();
+        GetCodeInfo info = new GetCodeInfo();
         info.buildMapInfo();
 
         for(String moduleName : info.getModuleMapPackages().keySet()) {

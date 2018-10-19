@@ -14,7 +14,7 @@ import java.util.Map;
 /**
  * 获取指定目录下所有的包名、类名与方法名
  */
-public class GetInfo {
+public class GetCodeInfo {
 
     private static String projectDirPath;
 
@@ -66,7 +66,7 @@ public class GetInfo {
         this.packageRoot = sb.toString();
     }
 
-    public GetInfo() {
+    public GetCodeInfo() {
         this.moduleList = new ArrayList<>();
         this.moduleMapPackages = new HashMap<>();
         this.packageMapClazzs = new HashMap<>();
@@ -157,7 +157,7 @@ public class GetInfo {
     }
 
     public static void main(String[] args) {
-        GetInfo getInfo = new GetInfo();
+        GetCodeInfo getInfo = new GetCodeInfo();
         getInfo.buildMapInfo();
 
         for(String module : getInfo.getModuleList()) {

@@ -23,7 +23,7 @@ public class SdToLtsMain {
     public static void main(String[] args) {
         init();
 
-        String sequenceDiagramFullPath = transformConf.get("sequenceDiagramXmiPath") + transformConf.get("sequenceDiagramXmiName");
+        String sequenceDiagramFullPath = transformConf.get("sequenceDiagramXmiPath") + transformConf.get("sequenceDiagramXmiName") + ".xml";
         TransformSd2Lts trans = new TransformSd2Lts(sequenceDiagramFullPath);
         LTS lts = trans.getLTS();
         List<List<LTSNodePath>> allPaths = LtsUtil.getAllPath(lts.getStart());

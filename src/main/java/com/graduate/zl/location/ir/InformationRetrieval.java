@@ -1,5 +1,6 @@
 package com.graduate.zl.location.ir;
 
+import com.graduate.zl.common.util.CommonFunc;
 import com.graduate.zl.location.common.LocConfConstant;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,6 +10,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 获取制定项目的包名、类名、方法名
+ */
 public class InformationRetrieval {
 
     private String[] keyATSWords; //可靠性策略关键词
@@ -24,18 +28,24 @@ public class InformationRetrieval {
 
     private Map<String, String> locConf;
 
+    private int matchLevel;
+
     public void init() {
         this.locConf = LocConfConstant.getLocConf();
+        this.matchLevel = Integer.parseInt(this.locConf.get("module_match_level"));
         this.keyATSWords = this.locConf.get("keyATWords").split("&");
-    }
-
-    public InformationRetrieval() {
         this.relatedPackage = new HashMap<>();
         this.relatedClass = new HashMap<>();
         this.relatedMethod = new HashMap<>();
+    }
+
+    public InformationRetrieval() {
         init();
     }
 
+    /**
+     * 执行信息检索
+     */
     public void executeIR() {
         GetCodeInfo info = new GetCodeInfo();
         info.buildMapInfo();
@@ -71,7 +81,8 @@ public class InformationRetrieval {
             List<String> classNames = info.getPackageMapClazzs().get(packageName);
             for(String className : classNames) {
                 for(String keyATWord : this.keyATSWords) {
-                    if(className.toLowerCase().contains(keyATWord.toLowerCase())) {
+                    // if(className.toLowerCase().contains(keyATWord.toLowerCase()))
+                    if(CommonFunc.match(className.toLowerCase(), keyATWord.toLowerCase(), this.matchLevel)) {
                         if(!this.relatedClass.containsKey(keyATWord)) {
                             this.relatedClass.put(keyATWord, new ArrayList<>());
                         }
@@ -91,7 +102,8 @@ public class InformationRetrieval {
                     List<String> methodNames = info.getPackageMapClazzs().get(className);
                     for(String methodName : methodNames) {
                         for(String keyATWord : this.keyATSWords) {
-                            if(methodName.toLowerCase().contains(keyATWord.toLowerCase())) {
+                            // if(methodName.toLowerCase().contains(keyATWord.toLowerCase()))
+                            if(CommonFunc.match(methodName.toLowerCase(), keyATWord.toLowerCase(), this.matchLevel)) {
                                 if(!this.relatedMethod.containsKey(keyATWord)) {
                                     this.relatedMethod.put(keyATWord, new ArrayList<>());
                                 }

@@ -64,14 +64,15 @@ public class GetCodeInfo {
             sb.append("\\").append(str);
         }
         this.packageRoot = sb.toString();
-    }
 
-    public GetCodeInfo() {
         this.moduleList = new ArrayList<>();
         this.moduleMapPackages = new HashMap<>();
         this.packageMapClazzs = new HashMap<>();
         this.clazzMapMethods = new HashMap<>();
         this.clazzMapInnerClass = new HashMap<>();
+    }
+
+    public GetCodeInfo() {
         init();
     }
 

@@ -4,12 +4,12 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * Created by Vincent on 2018/9/25.
+ * Log实体模型
  */
 public class CodeLog {
 
     @Getter @Setter
-    private String threadName;
+    private String time;
 
     @Getter @Setter
     private String className;
@@ -18,19 +18,20 @@ public class CodeLog {
     private String methodName;
 
     @Getter @Setter
-    private long timestamp;
+    private String randomID;
+
+    @Getter @Setter
+    private String tag;
 
     public CodeLog() {
 
     }
-    public CodeLog(String threadName, String className, String methodName) {
-        this(threadName, className, methodName, System.currentTimeMillis());
-    }
 
-    public CodeLog(String threadName, String className, String methodName, long timestamp) {
-        this.threadName = threadName;
+    public CodeLog(String time, String className, String methodName, String randomID, String tag) {
+        this.time = time;
         this.className = className;
         this.methodName = methodName;
-        this.timestamp = timestamp;
+        this.randomID = randomID;
+        this.tag = tag;
     }
 }

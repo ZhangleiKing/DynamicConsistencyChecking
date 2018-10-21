@@ -1,5 +1,7 @@
 package com.graduate.zl.location.callGraph;
 
+import com.graduate.zl.sd2Lts.common.TransformConstant;
+
 import java.io.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -14,9 +16,19 @@ import java.util.Map;
 public class LogHandler {
 
     //private static String logFullPath = LocConfConstant.getLocConf().get("logFullPath");
-    private static String logFullPath = "E:\\tmp\\logs\\log.log";
+    private static String logDirPath;
+
+    private static String logFullPath;
+
+    private static Map<String, String> conf;
 
     private static Map<String, List<Integer>> contentMapLineNumber = new HashMap<>();
+
+    static {
+        conf = TransformConstant.getTransformConf();
+        logFullPath = conf.get("logFullPath") + conf.get("originalLogName");
+        logDirPath = conf.get("logFullPath");
+    }
 
     /**
      * 获取程序执行一次，打印的Log信息行数
@@ -67,12 +79,8 @@ public class LogHandler {
      * @return
      */
     public static String preHandleLog() {
-        String[] strs = logFullPath.split("\\\\");
         StringBuilder sb = new StringBuilder();
-        for(int i=0;i<strs.length-1;i++) {
-            sb.append(strs[i]).append("\\");
-        }
-        sb.append("preHandle.log");
+        sb.append(logDirPath).append(conf.get("handledLogName"));
         File preHandleLog = new File(sb.toString());
         int cnt = getOnePathNumber();
         String line = null;
@@ -82,6 +90,11 @@ public class LogHandler {
         try {
             if(!preHandleLog.exists()) {
                 preHandleLog.createNewFile();
+                //先清空该文件的内容，方便后面的写入不被其他内容干扰
+                FileWriter writer = new FileWriter(preHandleLog);
+                writer.write("");
+                writer.flush();
+                writer.close();
             }
             out = new FileOutputStream(preHandleLog, true);
             reader = new FileReader(logFullPath);

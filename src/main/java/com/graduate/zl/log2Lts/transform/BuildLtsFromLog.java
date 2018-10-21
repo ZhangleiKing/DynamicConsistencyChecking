@@ -4,15 +4,19 @@ import com.graduate.zl.common.model.Lts.LNode;
 import com.graduate.zl.common.model.Lts.LTS;
 import com.graduate.zl.common.model.Lts.LTransition;
 import com.graduate.zl.common.model.Lts.LTransitionLabel;
+import com.graduate.zl.common.util.LtsUtil;
+import com.graduate.zl.sd2Lts.common.TransformConstant;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.sql.Timestamp;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Created by Vincent on 2018/9/25.
+ * 基于Log构建LTS
  */
 public class BuildLtsFromLog {
 
@@ -20,13 +24,20 @@ public class BuildLtsFromLog {
 
     private LNode root = null;
 
-    private AtomicInteger count = new AtomicInteger(1);
+    private AtomicInteger count = new AtomicInteger(0);
 
-    public BuildLtsFromLog(String logFilePath) {
-        this.logFilePath = logFilePath;
+    private Map<String, String> conf;
+
+    private void init() {
+        this.conf = TransformConstant.getTransformConf();
+        this.logFilePath = this.conf.get("logFullPath") + this.conf.get("handledLogName");
     }
 
-    public void buildLtsFromLog() {
+    public BuildLtsFromLog() {
+        init();
+    }
+
+    private void buildLtsFromLog() {
         LNode preNode = this.root;
         String preTransitionName = null;
         FileReader fr = null;
@@ -37,15 +48,17 @@ public class BuildLtsFromLog {
             String logContent;
             while((logContent = br.readLine()) != null) {
                 String[] parts = parseLogLine(logContent);
-                LNode node = new LNode(count.getAndIncrement(), parts[1]); //以Class名为LNode名称
+                String className = parts[1].split("-")[0];
+                String methodName = parts[1].split("-")[1];
+                LNode node = new LNode(count.getAndIncrement(), className.substring(1, className.length()-1)); //以Class名为LNode名称
                 if(this.root == null) {
                     this.root = node;
                     preNode = this.root;
-                    preTransitionName = parts[2];
+                    preTransitionName = methodName.substring(1, methodName.length()-1);
                 } else {
-                    preNode.getNext().put(node, new LTransition(new LTransitionLabel(preTransitionName, null, null, false), Long.parseLong(parts[3])));
+                    preNode.getNext().put(node, new LTransition(new LTransitionLabel(preTransitionName, null, null, false), Timestamp.valueOf(parts[0]).getTime()));
                     preNode = node;
-                    preTransitionName = parts[2];
+                    preTransitionName = methodName.substring(1, methodName.length()-1);
                 }
             }
         } catch (FileNotFoundException e) {
@@ -61,18 +74,30 @@ public class BuildLtsFromLog {
      * @return
      */
     private String[] parseLogLine(String str) {
-        String[] parts = str.split(",");
-        String[] ret = new String[4];
+        String[] parts = str.split(";");
+        String[] ret = new String[5];
         for(int i=0; i<4; i++) {
-            ret[i] = parts[i].split(":")[1].trim();
+            if(i>1)
+                ret[i] = parts[i].split(":")[1].trim();
+            else
+                ret[i] = parts[i];
         }
         return ret;
     }
 
+    /**
+     * 获取基于Log进行转换后的LTS
+     * @return
+     */
     public LTS getLTS() {
         LTS ret = new LTS();
         buildLtsFromLog();
         ret.buildLts(this.root);
         return ret;
+    }
+
+    public static void main(String[] args) {
+        BuildLtsFromLog bt = new BuildLtsFromLog();
+        LtsUtil.printAllPath(LtsUtil.getAllPath(bt.getLTS().getStart()));
     }
 }

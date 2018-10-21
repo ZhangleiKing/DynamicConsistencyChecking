@@ -1,7 +1,7 @@
 package com.graduate.zl.common;
 
 /**
- * Created by Vincent on 2018/9/24.
+ * 常量
  */
 public class Constants {
 

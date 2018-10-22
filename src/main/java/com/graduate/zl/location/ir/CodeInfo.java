@@ -14,7 +14,7 @@ import java.util.Map;
 /**
  * 获取指定目录下所有的包名、类名与方法名
  */
-public class GetCodeInfo {
+public class CodeInfo {
 
     private static String projectDirPath;
 
@@ -72,7 +72,7 @@ public class GetCodeInfo {
         this.clazzMapInnerClass = new HashMap<>();
     }
 
-    public GetCodeInfo() {
+    public CodeInfo() {
         init();
     }
 
@@ -158,7 +158,7 @@ public class GetCodeInfo {
     }
 
     public static void main(String[] args) {
-        GetCodeInfo getInfo = new GetCodeInfo();
+        CodeInfo getInfo = new CodeInfo();
         getInfo.buildMapInfo();
 
         for(String module : getInfo.getModuleList()) {

@@ -17,7 +17,7 @@ import java.util.Map;
  * 获取UML时序图模型中的相关信息
  * 主要的文本信息包括对象名称、消息名称
  */
-public class GetModelInfo {
+public class ModelInfo {
 
     @Getter
     private List<String> objectNameList;
@@ -36,8 +36,9 @@ public class GetModelInfo {
         this.modelFileFullPath = this.conf.get("sequenceDiagramXmiPath") + this.conf.get("sequenceDiagramXmiName") + ".xml";
     }
 
-    public GetModelInfo() {
+    public ModelInfo() {
         init();
+        parseInfo();
     }
 
     /**
@@ -71,8 +72,7 @@ public class GetModelInfo {
     }
 
     public static void main(String[] args) {
-        GetModelInfo gm = new GetModelInfo();
-        gm.parseInfo();
+        ModelInfo gm = new ModelInfo();
         for(String objectName: gm.getObjectNameList())
             System.out.println(objectName);
         for(String msgName : gm.getMessageNameList())

@@ -1,5 +1,6 @@
 package com.graduate.zl.location.ir;
 
+import com.graduate.zl.common.classLoader.URLPathClassLoader;
 import com.graduate.zl.location.common.LocConfConstant;
 import lombok.Getter;
 import lombok.Setter;
@@ -50,7 +51,10 @@ public class CodeInfo {
     @Getter @Setter
     private String packageRoot;
 
+    private URLPathClassLoader urlPathClassLoader;
+
     public void init() {
+        this.urlPathClassLoader = new URLPathClassLoader();
         this.locConf = LocConfConstant.getLocConf();
         this.moduleBlackList = this.locConf.get("module_black_list").split("&");
         this.moduleName = this.locConf.get("target_module");
@@ -64,6 +68,7 @@ public class CodeInfo {
             sb.append("\\").append(str);
         }
         this.packageRoot = sb.toString();
+        System.out.println("packageRoot: "+packageRoot);
 
         this.moduleList = new ArrayList<>();
         this.moduleMapPackages = new HashMap<>();
@@ -121,14 +126,40 @@ public class CodeInfo {
                         packageMapClazzs.put(packagePrefix, new ArrayList<>());
                     }
                     String fileName = file.getName();
-                    if(fileName.contains(".java"))
-                        packageMapClazzs.get(packagePrefix).add(fileName.substring(0, fileName.length()-5));
+                    if(fileName.contains(".java")) {
+                        String fileNameWtPostfix = fileName.substring(0, fileName.length()-5);
+                        packageMapClazzs.get(packagePrefix).add(fileNameWtPostfix);
+                        getClassMap1(packagePrefix+"."+fileNameWtPostfix);
+                    }
                 }
             }
         }
     }
 
-    public void getClassMap(String clazzName) {
+    private void getClassMap1(String clazzName) {
+        if(!this.clazzMapMethods.containsKey(clazzName)) {
+            this.clazzMapMethods.put(clazzName, new ArrayList<>());
+        }
+        if(!this.clazzMapInnerClass.containsKey(clazzName)) {
+            this.clazzMapInnerClass.put(clazzName, new ArrayList<>());
+        }
+
+        List<String> methodList = this.urlPathClassLoader.getMethodList(clazzName);
+        List<String> innerClassList = this.urlPathClassLoader.getInnerClassList(clazzName);
+        if(methodList != null) {
+            for(String methodName : methodList) {
+                this.clazzMapMethods.get(clazzName).add(methodName);
+            }
+        }
+        if(innerClassList != null) {
+            for(String className : innerClassList) {
+                this.clazzMapInnerClass.get(clazzName).add(className);
+                getClassMap1(className);
+            }
+        }
+    }
+
+    private void getClassMap(String clazzName) {
         if(!clazzMapMethods.containsKey(clazzName)) {
             clazzMapMethods.put(clazzName, new ArrayList<>());
         }
@@ -137,6 +168,7 @@ public class CodeInfo {
         }
         Class obj = null;
         try {
+            System.out.println("getClassMap: "+clazzName);
             obj = Class.forName(clazzName);
             Method[] methods = obj.getDeclaredMethods();
             Class[] classes = obj.getDeclaredClasses();
@@ -157,45 +189,36 @@ public class CodeInfo {
         getMap(new File(getPackageRoot()), "");
     }
 
+    public void printInfo() {
+        for(String moduleName : this.getModuleMapPackages().keySet()) {
+            System.out.println("moduleName: "+moduleName);
+            for(String packageName : this.getModuleMapPackages().get(moduleName)) {
+                System.out.println(packageName);
+            }
+        }
+        for(String packageName : this.getPackageMapClazzs().keySet()) {
+            System.out.println("packageName: "+packageName);
+            for(String className : this.getPackageMapClazzs().get(packageName)) {
+                System.out.println(className);
+            }
+        }
+        for(String className : this.getClazzMapMethods().keySet()) {
+            System.out.println("className: "+className);
+            for(String methodName : this.getClazzMapMethods().get(className)) {
+                System.out.println(methodName);
+            }
+        }
+        for(String className : this.getClazzMapInnerClass().keySet()) {
+            System.out.println("className: "+className);
+            for(String innerClassName : this.getClazzMapInnerClass().get(className)) {
+                System.out.println(innerClassName);
+            }
+        }
+    }
+
     public static void main(String[] args) {
         CodeInfo getInfo = new CodeInfo();
         getInfo.buildMapInfo();
-
-        for(String module : getInfo.getModuleList()) {
-            System.out.println("module: " + module);
-        }
-
-        for(String modulename : getInfo.getModuleMapPackages().keySet()) {
-            System.out.println("module["+modulename+"]: ");
-            for(String packagename : getInfo.getModuleMapPackages().get(modulename)) {
-                System.out.println("packageName: "+packagename);
-            }
-            System.out.println("--------------------");
-        }
-
-        System.out.println("###############################");
-
-        for(String packagename : getInfo.getPackageMapClazzs().keySet()) {
-            System.out.println("package["+packagename+"]: ");
-            for(String className : getInfo.getPackageMapClazzs().get(packagename)) {
-                System.out.println("className: "+className);
-                getInfo.getClassMap(packagename+"."+className);
-            }
-            System.out.println("--------------------");
-        }
-
-        System.out.println("###############################");
-
-        for(String className : getInfo.getClazzMapMethods().keySet()) {
-            System.out.println("class["+className+"]: ");
-            for(String methodName : getInfo.getClazzMapMethods().get(className)) {
-                System.out.println("methodName: "+methodName);
-            }
-            System.out.println("---------------------");
-            for(String innerClassName : getInfo.getClazzMapInnerClass().get(className)) {
-                System.out.println("innerClassName: "+innerClassName);
-            }
-            System.out.println("---------------------");
-        }
+        getInfo.printInfo();
     }
 }

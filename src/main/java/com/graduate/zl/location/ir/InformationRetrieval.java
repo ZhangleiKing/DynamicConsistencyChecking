@@ -63,10 +63,18 @@ public class InformationRetrieval {
         this.locConf = LocConfConstant.getLocConf();
         this.matchLevel = Integer.parseInt(this.locConf.get("module_match_level"));
         this.keyATSWords = this.locConf.get("keyATWords").split("&");
+
+        this.modelInfo = new ModelInfo();
+
         this.atsRelatedPackage = new HashMap<>();
         this.atsRelatedClass = new HashMap<>();
         this.atsRelatedMethod = new HashMap<>();
-        this.modelInfo = new ModelInfo();
+        this.modelObjRelatedPackage = new HashMap<>();
+        this.modelObjRelatedClass = new HashMap<>();
+        this.modelObjRelatedMethod = new HashMap<>();
+        this.modelMsgRelatedPackage = new HashMap<>();
+        this.modelMsgRelatedClass = new HashMap<>();
+        this.modelMsgRelatedMethod = new HashMap<>();
     }
 
     public InformationRetrieval() {
@@ -198,38 +206,121 @@ public class InformationRetrieval {
         }
     }
 
-    public static void main(String[] args) {
-        InformationRetrieval ir = new InformationRetrieval();
-        ir.executeIR();
-
-        for(String keyWord : ir.getAtsRelatedPackage().keySet()) {
-            System.out.println("#Package Level# <keyWord: "+keyWord+">");
-            List<String> packageNames = ir.getAtsRelatedPackage().get(keyWord);
+    public void printResult() {
+        System.out.println("#####-----Package Level-----#####");
+        for(String keyWord : this.atsRelatedPackage.keySet()) {
+            System.out.println("<ATS keyWord: "+keyWord+">");
+            List<String> packageNames = this.atsRelatedPackage.get(keyWord);
             if(packageNames != null) {
                 for(String packageName : packageNames) {
                     System.out.println(packageName);
                 }
+            }else {
+                System.out.println("none related!!!");
             }
         }
+        for(String keyWord : this.modelObjRelatedPackage.keySet()) {
+            System.out.println("<Model Object keyWord: "+keyWord+">");
+            List<String> packageNames = this.modelObjRelatedPackage.get(keyWord);
+            if(packageNames != null) {
+                for(String packageName : packageNames) {
+                    System.out.println(packageName);
+                }
+            }else {
+                System.out.println("none related!!!");
+            }
+        }
+        for(String keyWord : this.modelMsgRelatedPackage.keySet()) {
+            System.out.println("<Model Message keyWord: "+keyWord+">");
+            List<String> packageNames = this.modelMsgRelatedPackage.get(keyWord);
+            if(packageNames != null) {
+                for(String packageName : packageNames) {
+                    System.out.println(packageName);
+                }
+            }else {
+                System.out.println("none related!!!");
+            }
+        }
+        System.out.println("#####-----Package Level-----#####");
+        System.out.println("");
 
-        for(String keyWord : ir.getAtsRelatedClass().keySet()) {
-            System.out.println("#Class Level#<keyWord: "+keyWord+">");
-            List<String> classNames = ir.getAtsRelatedClass().get(keyWord);
+        System.out.println("#####-----Class Level-----#####");
+        for(String keyWord : this.atsRelatedClass.keySet()) {
+            System.out.println("<ATS keyWord: "+keyWord+">");
+            List<String> classNames = this.atsRelatedClass.get(keyWord);
             if(classNames != null) {
                 for(String className : classNames) {
                     System.out.println(className);
                 }
+            }else {
+                System.out.println("none related!!!");
             }
         }
+        for(String keyWord : this.modelObjRelatedClass.keySet()) {
+            System.out.println("<Model Object keyWord: "+keyWord+">");
+            List<String> classNames = this.modelObjRelatedClass.get(keyWord);
+            if(classNames != null) {
+                for(String className : classNames) {
+                    System.out.println(className);
+                }
+            }else {
+                System.out.println("none related!!!");
+            }
+        }
+        for(String keyWord : this.modelMsgRelatedClass.keySet()) {
+            System.out.println("<Model Message keyWord: "+keyWord+">");
+            List<String> classNames = this.modelMsgRelatedClass.get(keyWord);
+            if(classNames != null) {
+                for(String className : classNames) {
+                    System.out.println(className);
+                }
+            }else {
+                System.out.println("none related!!!");
+            }
+        }
+        System.out.println("#####-----Class Level-----#####");
+        System.out.println("");
 
-        for(String keyWord : ir.getAtsRelatedMethod().keySet()) {
-            System.out.println("#Method Level#<keyWord: "+keyWord+">");
-            List<String> methodNames = ir.getAtsRelatedMethod().get(keyWord);
+        System.out.println("#####-----Method Level-----#####");
+        for(String keyWord : this.atsRelatedMethod.keySet()) {
+            System.out.println("<ATS keyWord: "+keyWord+">");
+            List<String> methodNames = this.atsRelatedMethod.get(keyWord);
             if(methodNames != null) {
                 for(String methodName : methodNames) {
                     System.out.println(methodName);
                 }
+            }else {
+                System.out.println("none related!!!");
             }
         }
+        for(String keyWord : this.modelObjRelatedMethod.keySet()) {
+            System.out.println("<Model Object keyWord: "+keyWord+">");
+            List<String> methodNames = this.modelObjRelatedMethod.get(keyWord);
+            if(methodNames != null) {
+                for(String methodName : methodNames) {
+                    System.out.println(methodName);
+                }
+            }else {
+                System.out.println("none related!!!");
+            }
+        }
+        for(String keyWord : this.modelMsgRelatedMethod.keySet()) {
+            System.out.println("<Model Message keyWord: "+keyWord+">");
+            List<String> methodNames = this.modelMsgRelatedMethod.get(keyWord);
+            if(methodNames != null) {
+                for(String methodName : methodNames) {
+                    System.out.println(methodName);
+                }
+            }else {
+                System.out.println("none related!!!");
+            }
+        }
+        System.out.println("#####-----Method Level-----#####");
+    }
+
+    public static void main(String[] args) {
+        InformationRetrieval ir = new InformationRetrieval();
+        ir.executeIR();
+        ir.printResult();
     }
 }

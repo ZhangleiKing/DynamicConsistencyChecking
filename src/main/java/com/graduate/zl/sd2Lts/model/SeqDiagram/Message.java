@@ -6,7 +6,7 @@ import lombok.Setter;
 import java.util.Map;
 
 /**
- * Created by Vincent on 2018/7/30.
+ * 消息
  */
 public class Message {
 

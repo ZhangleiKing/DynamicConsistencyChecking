@@ -1,6 +1,6 @@
 package com.graduate.zl.common.classLoader;
 
-import com.graduate.zl.location.common.LocConfConstant;
+import com.graduate.zl.traceability.common.LocConfConstant;
 
 import java.io.File;
 import java.lang.reflect.Method;

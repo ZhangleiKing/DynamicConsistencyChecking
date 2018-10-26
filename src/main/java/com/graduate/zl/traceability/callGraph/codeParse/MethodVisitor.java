@@ -1,13 +1,17 @@
-package com.graduate.zl.location.callGraph.codeParse;
+package com.graduate.zl.traceability.callGraph.codeParse;
 
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.generic.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
  * parse method in class and output call info
  */
 public class MethodVisitor extends EmptyVisitor  {
+    private static final Logger logger = LoggerFactory.getLogger(MethodVisitor.class);
+
     JavaClass visitedClass;
     private MethodGen mg;
     private ConstantPoolGen cp;
@@ -46,6 +50,7 @@ public class MethodVisitor extends EmptyVisitor  {
         String formatInternal = "%s";
         this.DegreeClass = String.format(formatInternal,i.getReferenceType(cp));
         this.DegreeMethod = i.getMethodName(cp);
+        logger.info(visitedClass.getClassName() + ":" + mg.getName() + " CALL " + this.DegreeClass + ":" + this.DegreeMethod);
         System.out.println(visitedClass.getClassName() + ":" + mg.getName() + " CALL " + this.DegreeClass + ":" + this.DegreeMethod);
     }
 

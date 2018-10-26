@@ -2,7 +2,7 @@ package com.graduate.zl.log2Lts;
 
 import com.graduate.zl.common.model.Lts.LTS;
 import com.graduate.zl.common.util.LtsUtil;
-import com.graduate.zl.location.callGraph.LogHandler;
+import com.graduate.zl.traceability.callGraph.LogHandler;
 import com.graduate.zl.log2Lts.transform.BuildLtsFromLog;
 
 /**

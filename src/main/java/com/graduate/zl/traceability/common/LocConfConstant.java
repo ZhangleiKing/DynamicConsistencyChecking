@@ -1,4 +1,4 @@
-package com.graduate.zl.location.common;
+package com.graduate.zl.traceability.common;
 
 import com.graduate.zl.common.util.PropertiesAccess;
 

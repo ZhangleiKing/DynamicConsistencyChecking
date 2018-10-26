@@ -1,7 +1,7 @@
-package com.graduate.zl.location.ir;
+package com.graduate.zl.traceability.ir;
 
 import com.graduate.zl.common.classLoader.URLPathClassLoader;
-import com.graduate.zl.location.common.LocConfConstant;
+import com.graduate.zl.traceability.common.LocConfConstant;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -68,7 +68,6 @@ public class CodeInfo {
             sb.append("\\").append(str);
         }
         this.packageRoot = sb.toString();
-        System.out.println("packageRoot: "+packageRoot);
 
         this.moduleList = new ArrayList<>();
         this.moduleMapPackages = new HashMap<>();
@@ -79,6 +78,7 @@ public class CodeInfo {
 
     public CodeInfo() {
         init();
+        buildMapInfo();
     }
 
     public void getModuleList(File folder) {
@@ -218,7 +218,6 @@ public class CodeInfo {
 
     public static void main(String[] args) {
         CodeInfo getInfo = new CodeInfo();
-        getInfo.buildMapInfo();
         getInfo.printInfo();
     }
 }

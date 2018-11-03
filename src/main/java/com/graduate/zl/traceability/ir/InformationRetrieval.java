@@ -180,7 +180,6 @@ public class InformationRetrieval {
                         String methodName = mn.toLowerCase();
                         for(String kaw : this.keyATSWords) {
                             String keyATWord = kaw.toLowerCase();
-                            // if(methodName.toLowerCase().contains(keyATWord.toLowerCase()))
                             if(CommonFunc.match(methodName, keyATWord, this.matchLevel)) {
                                 if(!this.atsRelatedMethod.containsKey(keyATWord)) {
                                     this.atsRelatedMethod.put(keyATWord, new ArrayList<>());
@@ -274,6 +273,7 @@ public class InformationRetrieval {
                 }
             }
         }
+
         for(String keyWord : this.atsRelatedMethod.keySet()) {
             List<String> methodNames = this.atsRelatedMethod.get(keyWord);
             if(methodNames != null) {

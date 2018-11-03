@@ -32,9 +32,14 @@ public class Locate {
 
     public Locate() {
         init();
+        process();
     }
 
     public void process() {
+        recordLocationResult();
+    }
+
+    public void recordLocationResult() {
         File locationFile = new File(this.locationResultFilePath);
         FileWriter writer = null;
         BufferedWriter br = null;
@@ -61,6 +66,5 @@ public class Locate {
 
     public static void main(String[] args) {
         Locate locate = new Locate();
-        locate.process();
     }
 }

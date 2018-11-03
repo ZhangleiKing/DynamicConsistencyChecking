@@ -23,14 +23,17 @@ public class CallDistance {
 
     private Map<String, String> conf;
 
-    private int validCallDistance;
+    private int locationValidCallDistance;
+
+    private int mappingValidCallDistance;
 
     private void init() {
         preHandleCG = new PreHandleCG();
         this.methodNodeNum = preHandleCG.getMethodCallNodes().size();
         this.distance = new int[this.methodNodeNum+1][this.methodNodeNum+1];
         this.conf = LocConfConstant.getLocConf();
-        this.validCallDistance = Integer.parseInt(this.conf.get("validCallDistance"));
+        this.locationValidCallDistance = Integer.parseInt(this.conf.get("locationValidCallDistance"));
+        this.mappingValidCallDistance = Integer.parseInt(this.conf.get("mappingValidCallDistance"));
         arrayInit();
     }
 
@@ -90,15 +93,35 @@ public class CallDistance {
     }
 
     /**
-     * 获取有效调用距离内的相关调用方法
+     * 针对location过程，获取有效调用距离内的相关调用方法
      * @param method com.atm.rd.model.Response:getContent(class:method)
      * @return
      */
-    public List<String> getRelatedMethods(String method) {
+    public List<String> getRelatedMethodsForLocation(String method) {
         List<String> ret = new ArrayList<>();
+        if(!this.preHandleCG.getMethodCallNodes().containsKey(method))
+            return null;
         int num1 = this.preHandleCG.getMethodCallNodes().get(method);
         for(int i=1; i<=this.methodNodeNum; i++) {
-            if(i != num1 && this.distance[num1][i] < this.validCallDistance) {
+            if(i != num1 && this.distance[num1][i] < this.locationValidCallDistance) {
+                ret.add(getMethodName(i));
+            }
+        }
+        return ret;
+    }
+
+    /**
+     * 针对mapping过程，获取有效调用距离内的相关调用方法
+     * @param method com.atm.rd.model.Response:getContent(class:method)
+     * @return
+     */
+    public List<String> getRelatedMethodsForMapping(String method) {
+        List<String> ret = new ArrayList<>();
+        if(!this.preHandleCG.getMethodCallNodes().containsKey(method))
+            return null;
+        int num1 = this.preHandleCG.getMethodCallNodes().get(method);
+        for(int i=1; i<=this.methodNodeNum; i++) {
+            if(i != num1 && this.distance[num1][i] < this.mappingValidCallDistance) {
                 ret.add(getMethodName(i));
             }
         }
@@ -114,7 +137,7 @@ public class CallDistance {
             System.out.println("");
         }
         System.out.println("-------------------------");
-        List<String> re = cd.getRelatedMethods("com.atm.rd.client.Client:sendPing");
+        List<String> re = cd.getRelatedMethodsForLocation("com.atm.rd.client.Client:sendPing");
         for(String mm : re) {
             System.out.println(mm);
         }

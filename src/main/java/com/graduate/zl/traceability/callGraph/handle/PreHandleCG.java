@@ -1,12 +1,10 @@
 package com.graduate.zl.traceability.callGraph.handle;
 
+import com.graduate.zl.traceability.callGraph.codeParse.CallGraphMainEntry;
 import com.graduate.zl.traceability.common.LocConfConstant;
 import lombok.Getter;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,11 +28,14 @@ public class PreHandleCG {
 
     private AtomicInteger count = new AtomicInteger(1);
 
+
+
     private void init() {
         this.locConf = LocConfConstant.getLocConf();
         this.methodCallFilePath = this.locConf.get("methodCallFilePath") + this.locConf.get("methodCallFileName");
         this.methodCallMap = new HashMap<>();
         this.methodCallNodes = new HashMap<>();
+
     }
 
     public PreHandleCG() {

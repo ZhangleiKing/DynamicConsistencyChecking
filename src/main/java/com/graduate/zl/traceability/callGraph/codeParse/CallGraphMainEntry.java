@@ -27,6 +27,7 @@ public class CallGraphMainEntry {
 
     public CallGraphMainEntry() {
         init();
+        process();
     }
 
     public void process() {
@@ -61,6 +62,5 @@ public class CallGraphMainEntry {
 
     public static void main(String[] args) throws FileNotFoundException {
         CallGraphMainEntry cg = new CallGraphMainEntry();
-        cg.process();
     }
 }

@@ -101,7 +101,7 @@ public class InformationRetrieval {
                     String keyATWord = kaw.toLowerCase();
                     if(packageName.contains(keyATWord)) {
                         if(!this.atsRelatedPackage.containsKey(keyATWord)) {
-                            this.atsRelatedPackage.put(keyATWord, new ArrayList<>());
+                            this.atsRelatedPackage.put(kaw, new ArrayList<>());
                         }
                         boolean needPut = true;
                         for(int i=0;i<this.atsRelatedPackage.get(keyATWord).size();i++) {
@@ -110,12 +110,12 @@ public class InformationRetrieval {
                                 needPut = false;
                                 break;
                             }else if(str.indexOf(packageName) == 0) {
-                                this.atsRelatedPackage.get(keyATWord).remove(str);
+                                this.atsRelatedPackage.get(kaw).remove(str);
                                 i--;
                             }
                         }
                         if(needPut) {
-                            this.atsRelatedPackage.get(keyATWord).add(packageName);
+                            this.atsRelatedPackage.get(kaw).add(packageName);
                         }
                     }
                 }
@@ -123,18 +123,18 @@ public class InformationRetrieval {
                     String modelObjName = mon.toLowerCase();
                     if(CommonFunc.match(packageName, modelObjName, this.matchLevel)) {
                         if(!this.modelObjRelatedPackage.containsKey(modelObjName)) {
-                            this.modelObjRelatedPackage.put(modelObjName, new ArrayList<>());
+                            this.modelObjRelatedPackage.put(mon, new ArrayList<>());
                         }
-                        this.modelObjRelatedPackage.get(modelObjName).add(packageName);
+                        this.modelObjRelatedPackage.get(mon).add(packageName);
                     }
                 }
                 for(String mmn : this.modelInfo.getMessageNameList()) {
                     String modelMsgName = mmn.toLowerCase();
                     if(CommonFunc.match(packageName, modelMsgName, this.matchLevel)) {
                         if(!this.modelMsgRelatedPackage.containsKey(modelMsgName)) {
-                            this.modelMsgRelatedPackage.put(modelMsgName, new ArrayList<>());
+                            this.modelMsgRelatedPackage.put(mmn, new ArrayList<>());
                         }
-                        this.modelMsgRelatedPackage.get(modelMsgName).add(packageName);
+                        this.modelMsgRelatedPackage.get(mmn).add(packageName);
                     }
                 }
             }
@@ -150,27 +150,27 @@ public class InformationRetrieval {
                     // if(className.toLowerCase().contains(keyATWord.toLowerCase()))
                     if(CommonFunc.match(className, keyATWord, this.matchLevel)) {
                         if(!this.atsRelatedClass.containsKey(keyATWord)) {
-                            this.atsRelatedClass.put(keyATWord, new ArrayList<>());
+                            this.atsRelatedClass.put(kaw, new ArrayList<>());
                         }
-                        this.atsRelatedClass.get(keyATWord).add(fullClassName);
+                        this.atsRelatedClass.get(kaw).add(fullClassName);
                     }
                 }
                 for(String mon : modelInfo.getObjectNameList()) {
                     String modelObjectName = mon.toLowerCase();
                     if(CommonFunc.match(className, modelObjectName, this.matchLevel)) {
-                        if(!this.modelObjRelatedClass.containsKey(modelObjectName)) {
-                            this.modelObjRelatedClass.put(modelObjectName, new ArrayList<>());
+                        if(!this.modelObjRelatedClass.containsKey(mon)) {
+                            this.modelObjRelatedClass.put(mon, new ArrayList<>());
                         }
-                        this.modelObjRelatedClass.get(modelObjectName).add(fullClassName);
+                        this.modelObjRelatedClass.get(mon).add(fullClassName);
                     }
                 }
                 for(String mmn : modelInfo.getMessageNameList()) {
                     String modelMessageName = mmn.toLowerCase();
                     if(CommonFunc.match(className, modelMessageName, this.matchLevel)) {
-                        if(!this.modelMsgRelatedClass.containsKey(modelMessageName)) {
-                            this.modelMsgRelatedClass.put(modelMessageName, new ArrayList<>());
+                        if(!this.modelMsgRelatedClass.containsKey(mmn)) {
+                            this.modelMsgRelatedClass.put(mmn, new ArrayList<>());
                         }
-                        this.modelMsgRelatedClass.get(modelMessageName).add(fullClassName);
+                        this.modelMsgRelatedClass.get(mmn).add(fullClassName);
                     }
                 }
 
@@ -181,28 +181,28 @@ public class InformationRetrieval {
                         for(String kaw : this.keyATSWords) {
                             String keyATWord = kaw.toLowerCase();
                             if(CommonFunc.match(methodName, keyATWord, this.matchLevel)) {
-                                if(!this.atsRelatedMethod.containsKey(keyATWord)) {
-                                    this.atsRelatedMethod.put(keyATWord, new ArrayList<>());
+                                if(!this.atsRelatedMethod.containsKey(kaw)) {
+                                    this.atsRelatedMethod.put(kaw, new ArrayList<>());
                                 }
-                                this.atsRelatedMethod.get(keyATWord).add(fullClassName+":"+methodName);
+                                this.atsRelatedMethod.get(kaw).add(fullClassName+":"+methodName);
                             }
                         }
                         for(String mon : modelInfo.getObjectNameList()) {
                             String modelObjectName = mon.toLowerCase();
                             if(CommonFunc.match(methodName, modelObjectName, this.matchLevel)) {
-                                if(!this.modelObjRelatedMethod.containsKey(modelObjectName)) {
-                                    this.modelObjRelatedMethod.put(modelObjectName, new ArrayList<>());
+                                if(!this.modelObjRelatedMethod.containsKey(mon)) {
+                                    this.modelObjRelatedMethod.put(mon, new ArrayList<>());
                                 }
-                                this.modelObjRelatedMethod.get(modelObjectName).add(fullClassName+":"+methodName);
+                                this.modelObjRelatedMethod.get(mon).add(fullClassName+":"+methodName);
                             }
                         }
                         for(String mmn : modelInfo.getMessageNameList()) {
                             String modelMessageName = mmn.toLowerCase();
                             if(CommonFunc.match(methodName, modelMessageName, this.matchLevel)) {
-                                if(!this.modelMsgRelatedMethod.containsKey(modelMessageName)) {
-                                    this.modelMsgRelatedMethod.put(modelMessageName, new ArrayList<>());
+                                if(!this.modelMsgRelatedMethod.containsKey(mmn)) {
+                                    this.modelMsgRelatedMethod.put(mmn, new ArrayList<>());
                                 }
-                                this.modelMsgRelatedMethod.get(modelMessageName).add(fullClassName+":"+methodName);
+                                this.modelMsgRelatedMethod.get(mmn).add(fullClassName+":"+methodName);
                             }
                         }
                     }

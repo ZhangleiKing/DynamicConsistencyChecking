@@ -12,7 +12,7 @@ import java.util.Map;
 /**
  * 将时序图转换为LTS的主入口
  */
-public class SdToLtsMain {
+public class LtsBasedSD {
 
     private static Map<String, String> transformConf = null;
 
@@ -20,12 +20,17 @@ public class SdToLtsMain {
         transformConf = TransformConstant.getTransformConf();
     }
 
-    public static void main(String[] args) {
+    public static LTS process() {
         init();
 
         String sequenceDiagramFullPath = transformConf.get("sequenceDiagramXmiPath") + transformConf.get("sequenceDiagramXmiName") + ".xml";
         TransformSd2Lts trans = new TransformSd2Lts(sequenceDiagramFullPath);
-        LTS lts = trans.getLTS();
+        LTS ret = trans.getLTS();
+        return ret;
+    }
+
+    public static void main(String[] args) {
+        LTS lts = process();
         List<List<LTSNodePath>> allPaths = LtsUtil.getAllPath(lts.getStart());
         LtsUtil.printAllPath(allPaths);
     }

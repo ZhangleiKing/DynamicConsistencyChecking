@@ -82,14 +82,20 @@ public class LtsConsistency {
         LTSNodePath curModelNT = modelLTS.get(mIndex);
         String curModelName = curModelNT.getNode().getLabel();
         //如果当前模型节点与代码节点能够映射
-        if(modelToClass.get(curModelName).contains(codeLTS.getLabel())) {
+        if(modelToClass.containsKey(curModelName) && modelToClass.get(curModelName).contains(codeLTS.getLabel())) {
             //如果当前模型节点是最后一个节点
             if(mIndex == modelLTS.size()-1) {
-                LNode codeNextNode = null;
-                for(LNode node : codeLTS.getNext().keySet()) {
+                LNode codeNextNode = codeLTS, preNode = codeLTS;
+                for(LNode node : codeNextNode.getNext().keySet()) {
                     codeNextNode = node;
-                    break;
+                    if(getBelongedModelObj(preNode.getLabel(), modelToClass).equals(getBelongedModelObj(codeNextNode.getLabel(), modelToClass))) {
+                        preNode = codeNextNode;
+                    }else {
+                        break;
+                    }
                 }
+                if(preNode.getNext().size() == 0)
+                    codeNextNode = null;
                 return backtrackingCheck(modelLTS, codeNextNode, modelToClass, mIndex+1);
             }else {
                 LTSNodePath nextModelNT = modelLTS.get(mIndex+1);
@@ -100,13 +106,13 @@ public class LtsConsistency {
                         nextCodeNode = cNode;
                         break;
                     }
-                    return backtrackingCheck(modelLTS, nextCodeNode, modelToClass, mIndex) ||
-                            backtrackingCheck(modelLTS, nextCodeNode, modelToClass, mIndex+1);
+                    return backtrackingCheck(modelLTS, nextCodeNode, modelToClass, mIndex+1) ||
+                            backtrackingCheck(modelLTS, codeLTS, modelToClass, mIndex+1);
                 }else {
                     //如果当前模型节点和相邻后续节点不是相同对象，则对于代码节点而言，需要考虑“一对多”实现的情况
                     LNode tmp = codeLTS;
                     //如果当前代码节点与后续节点映射为同一个对象，则一直向后查找，直到找到一个不相同的为止
-                    while(modelToClass.get(curModelName).contains(tmp.getLabel())) {
+                    while(modelToClass.get(modelLTS.get(mIndex).getNode().getLabel()).contains(tmp.getLabel())) {
                         if(tmp.getNext().size() == 0) {
                             tmp = null;
                             break;
@@ -120,8 +126,35 @@ public class LtsConsistency {
                 }
             }
         }else {
-            return false;
+            if(curModelName.contains("CF_END")) {
+                return backtrackingCheck(modelLTS, codeLTS, modelToClass, mIndex+2);
+            } else {
+                return false;
+            }
         }
+    }
+
+    /**
+     * 获取代码中指定类对应的模型对象名称
+     * @param className
+     * @param modelMapClass
+     * @return
+     */
+    private static String getBelongedModelObj(String className, Map<String, List<String>> modelMapClass) {
+        String ret = null;
+        for(String objName : modelMapClass.keySet()) {
+            List<String> rel = modelMapClass.get(objName);
+            for(String cn : rel) {
+                if(cn.equals(className)) {
+                    ret = objName;
+                    break;
+                }
+            }
+            if(ret != null) {
+                break;
+            }
+        }
+        return ret;
     }
 
     /**
@@ -357,9 +390,9 @@ public class LtsConsistency {
 
     public static void main(String[] args) {
         //测试获取全部分支路径
-        testGetAllPath(produceLTS());
+//        testGetAllPath(produceLTS());
 
         //测试一致性检测，包括三种情况
-//        testCheckConsistency();
+        testCheckConsistency();
     }
 }

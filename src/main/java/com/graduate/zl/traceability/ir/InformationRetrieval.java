@@ -1,6 +1,7 @@
 package com.graduate.zl.traceability.ir;
 
 import com.graduate.zl.common.util.CommonFunc;
+import com.graduate.zl.traceability.callGraph.handle.CallDistance;
 import com.graduate.zl.traceability.common.LocConfConstant;
 import lombok.Getter;
 import lombok.Setter;
@@ -63,13 +64,20 @@ public class InformationRetrieval {
     @Getter
     private Set<String> resultClass;
 
+    private CallDistance cd;
+
     public void init() {
         this.locConf = LocConfConstant.getLocConf();
+        int proCase = Integer.parseInt(this.locConf.get("proCase"));
         this.matchLevel = Integer.parseInt(this.locConf.get("module_match_level"));
-        this.keyATSWords = this.locConf.get("keyATWords").split("&");
+        if(proCase == 1) {
+            this.keyATSWords = this.locConf.get("keyATMWords").split("&");
+        } else if(proCase == 2) {
+            this.keyATSWords = this.locConf.get("keyOMHWords").split("&");
+        }
 
-        this.modelInfo = new ModelInfo();
-        this.codeInfo = new CodeInfo();
+        this.modelInfo = ModelInfo.getInstance();
+        this.codeInfo = CodeInfo.getInstance();
 
         this.atsRelatedPackage = new HashMap<>();
         this.atsRelatedClass = new HashMap<>();
@@ -81,6 +89,8 @@ public class InformationRetrieval {
         this.modelMsgRelatedClass = new HashMap<>();
         this.modelMsgRelatedMethod = new HashMap<>();
         this.resultClass = new HashSet<>();
+
+        this.cd = CallDistance.getInstance();
     }
 
     public InformationRetrieval() {
@@ -203,6 +213,65 @@ public class InformationRetrieval {
                                     this.modelMsgRelatedMethod.put(mmn, new ArrayList<>());
                                 }
                                 this.modelMsgRelatedMethod.get(mmn).add(fullClassName+":"+methodName);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        processByCG();
+    }
+
+    /**
+     * 只对符合关键字匹配的方法执行Call Graph，而并非对符合的类中所有的方法执行Call Graph
+     */
+    private void processByCG() {
+        Set<String> handled = new HashSet<>();
+        for(String key : this.atsRelatedMethod.keySet()) {
+            List<String> relatedMethods = this.atsRelatedMethod.get(key);
+            for(String relatedMethod : relatedMethods) {
+                if(!handled.contains(relatedMethod)) {
+                    handled.add(relatedMethod);
+                    List<String> cdRelatedMethods = this.cd.getRelatedMethodsForLocation(relatedMethod);
+                    if(cdRelatedMethods != null) {
+                        for(String cdRelatedMethod : cdRelatedMethods) {
+                            String tt = cdRelatedMethod.split(":")[0];
+                            if(!this.resultClass.contains(tt)) {
+                                this.resultClass.add(tt);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        for(String key : this.modelObjRelatedMethod.keySet()) {
+            List<String> relatedMethods = this.modelObjRelatedMethod.get(key);
+            for(String relatedMethod : relatedMethods) {
+                if(!handled.contains(relatedMethod)) {
+                    handled.add(relatedMethod);
+                    List<String> cdRelatedMethods = this.cd.getRelatedMethodsForLocation(relatedMethod);
+                    if(cdRelatedMethods != null) {
+                        for(String cdRelatedMethod : cdRelatedMethods) {
+                            String tt = cdRelatedMethod.split(":")[0];
+                            if(!this.resultClass.contains(tt)) {
+                                this.resultClass.add(tt);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        for(String key : this.modelMsgRelatedMethod.keySet()) {
+            List<String> relatedMethods = this.modelMsgRelatedMethod.get(key);
+            for(String relatedMethod : relatedMethods) {
+                if(!handled.contains(relatedMethod)) {
+                    handled.add(relatedMethod);
+                    List<String> cdRelatedMethods = this.cd.getRelatedMethodsForLocation(relatedMethod);
+                    if(cdRelatedMethods != null) {
+                        for(String cdRelatedMethod : cdRelatedMethods) {
+                            String tt = cdRelatedMethod.split(":")[0];
+                            if(!this.resultClass.contains(tt)) {
+                                this.resultClass.add(tt);
                             }
                         }
                     }

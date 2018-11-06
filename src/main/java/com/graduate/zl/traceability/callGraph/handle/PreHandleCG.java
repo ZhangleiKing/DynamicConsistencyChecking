@@ -1,14 +1,11 @@
 package com.graduate.zl.traceability.callGraph.handle;
 
-import com.graduate.zl.traceability.callGraph.codeParse.CallGraphMainEntry;
 import com.graduate.zl.traceability.common.LocConfConstant;
+import com.graduate.zl.traceability.ir.CodeInfo;
 import lombok.Getter;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -28,14 +25,36 @@ public class PreHandleCG {
 
     private AtomicInteger count = new AtomicInteger(1);
 
+    private CodeInfo codeInfo;
 
+    private Set<String> checkedClasses;
 
     private void init() {
+        this.codeInfo = CodeInfo.getInstance();
         this.locConf = LocConfConstant.getLocConf();
-        this.methodCallFilePath = this.locConf.get("methodCallFilePath") + this.locConf.get("methodCallFileName");
+        int proCase = Integer.parseInt(this.locConf.get("proCase"));
+        if(proCase == 1) {
+            this.methodCallFilePath = this.locConf.get("methodCallFilePath") + this.locConf.get("methodCallFileNameOfATM");
+        } else if(proCase == 2) {
+            this.methodCallFilePath = this.locConf.get("methodCallFilePath") + this.locConf.get("methodCallFileNameOfOMH");
+        }
         this.methodCallMap = new HashMap<>();
         this.methodCallNodes = new HashMap<>();
+        this.checkedClasses = new HashSet<>();
+        setCheckedClasses();
+    }
 
+    private void setCheckedClasses() {
+        for(String packageName : this.codeInfo.getPackageMapClazzs().keySet()) {
+            for(String className : this.codeInfo.getPackageMapClazzs().get(packageName)) {
+                this.checkedClasses.add(packageName+"."+className);
+            }
+        }
+        for(String className : this.codeInfo.getClazzMapInnerClass().keySet()) {
+            for(String innerClassName : this.codeInfo.getClazzMapInnerClass().get(className)) {
+                this.checkedClasses.add(innerClassName);
+            }
+        }
     }
 
     public PreHandleCG() {
@@ -51,19 +70,22 @@ public class PreHandleCG {
             br = new BufferedReader(fr);
             String logContent;
             while ((logContent = br.readLine()) != null) {
+
                 String methodCaller = logContent.split("CALL")[0].trim();
                 String methodCallee = logContent.split("CALL")[1].trim();
-                if(!this.methodCallMap.containsKey(methodCaller)) {
-                    this.methodCallMap.put(methodCaller, new ArrayList<>());
-                }
-                if(!this.methodCallMap.get(methodCaller).contains(methodCallee)) {
-                    this.methodCallMap.get(methodCaller).add(methodCallee);
-                }
-                if(!this.methodCallNodes.containsKey(methodCaller)) {
-                    this.methodCallNodes.put(methodCaller, count.getAndIncrement());
-                }
-                if(!this.methodCallNodes.containsKey(methodCallee)) {
-                    this.methodCallNodes.put(methodCallee, count.getAndIncrement());
+                if(this.checkedClasses.contains(methodCallee) && this.checkedClasses.contains(methodCaller)) {
+                    if(!this.methodCallMap.containsKey(methodCaller)) {
+                        this.methodCallMap.put(methodCaller, new ArrayList<>());
+                    }
+                    if(!this.methodCallMap.get(methodCaller).contains(methodCallee)) {
+                        this.methodCallMap.get(methodCaller).add(methodCallee);
+                    }
+                    if(!this.methodCallNodes.containsKey(methodCaller)) {
+                        this.methodCallNodes.put(methodCaller, count.getAndIncrement());
+                    }
+                    if(!this.methodCallNodes.containsKey(methodCallee)) {
+                        this.methodCallNodes.put(methodCallee, count.getAndIncrement());
+                    }
                 }
             }
         } catch (FileNotFoundException e) {

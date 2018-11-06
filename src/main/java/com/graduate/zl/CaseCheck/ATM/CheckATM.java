@@ -38,14 +38,17 @@ public class CheckATM {
         List<List<LTSNodePath>> codePaths = LtsUtil.getAllPath(codeLTS.getStart());
         LtsUtil.printAllPath(codePaths);
         boolean ret = false;
+        List<LTSNodePath> matchPath = null;
         for(List<LTSNodePath> modelPath : modelPaths) {
             if(LtsConsistency.backtrackingCheck(modelPath, codeLTS.getStart(), modelMapClass, 0)) {
                 ret = true;
+                matchPath = modelPath;
                 break;
             }
         }
         if(ret) {
-            System.out.println("Consistent!!!");
+            System.out.println("Consistent!! And the match model path is as follows: ");
+            LtsUtil.printSimplePath(matchPath);
         } else {
             System.out.println("Not Consistent!!!");
         }

@@ -28,7 +28,12 @@ public class TracebilityMain {
 
     private void init() {
         this.locConf = LocConfConstant.getLocConf();
-        this.methodCallFilePath = this.locConf.get("methodCallFilePath") + this.locConf.get("methodCallFileName");
+        int proCase = Integer.parseInt(this.locConf.get("proCase"));
+        if(proCase == 1) {
+            this.methodCallFilePath = this.locConf.get("methodCallFilePath") + this.locConf.get("methodCallFileNameOfATM");
+        } else if(proCase == 2) {
+            this.methodCallFilePath = this.locConf.get("methodCallFilePath") + this.locConf.get("methodCallFileNameOfOMH");
+        }
         clearLogFile();
         this.callGraphMainEntry = new CallGraphMainEntry();
         locate = new Locate();

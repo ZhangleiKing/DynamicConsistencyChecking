@@ -65,4 +65,23 @@ public class LtsUtil {
             System.out.println("---------------------");
         }
     }
+
+    public static void printPath(List<LTSNodePath> path) {
+        StringBuilder sb;
+        sb = new StringBuilder();
+        for(LTSNodePath nt : path) {
+            sb.append(nt.getNode().getNumber()+">");
+            System.out.println(nt.toString());
+        }
+        System.out.println(sb.substring(0, sb.length()-1));
+    }
+
+    public static void printSimplePath(List<LTSNodePath> path) {
+        StringBuilder sb;
+        sb = new StringBuilder();
+        for(LTSNodePath nt : path) {
+            sb.append(nt.getNode().getNumber()+">");
+        }
+        System.out.println(sb.substring(0, sb.length()-1));
+    }
 }

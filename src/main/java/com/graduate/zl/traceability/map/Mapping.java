@@ -19,11 +19,13 @@ public class Mapping {
 
     private Map<String, String> locConf;
 
-    private Map<String, String> transformConf;
+    private Map<String, String> transConf;
 
     private String locationResultFilePath;
 
     private String mappingResultFilePath;
+
+    private String sdXMIPath;
 
     private InformationRetrieval ir;
 
@@ -48,16 +50,24 @@ public class Mapping {
 
     private void init() {
         this.locConf = LocConfConstant.getLocConf();
-        this.transformConf = TransformConstant.getTransformConf();
-        this.locationResultFilePath = this.locConf.get("locationResultFilePath")+this.locConf.get("correctLocationResultFileName");
-        this.mappingResultFilePath = this.locConf.get("mappingResultFilePath")+this.locConf.get("mappingResultFileName");
+        this.transConf = TransformConstant.getTransformConf();
+        int proCase = Integer.parseInt(this.locConf.get("proCase"));
+        if(proCase == 1) {
+            this.locationResultFilePath = this.locConf.get("locationResultFilePath")+this.locConf.get("locationResultFileNameOfATM");
+            this.mappingResultFilePath = this.locConf.get("mappingResultFilePath")+this.locConf.get("mappingResultFileNameOfATM");
+            this.sdXMIPath = this.transConf.get("ATMSequenceDiagramXmiPath") + this.transConf.get("ATMSequenceDiagramXmiName");
+        } else if(proCase == 2) {
+            this.locationResultFilePath = this.locConf.get("locationResultFilePath") + this.locConf.get("locationResultFileNameOfOMH");
+            this.mappingResultFilePath = this.locConf.get("mappingResultFilePath")+this.locConf.get("mappingResultFileNameOfOMH");
+            this.sdXMIPath = this.transConf.get("OMHSequenceDiagramXmiPath") + this.transConf.get("OMHSequenceDiagramXmiName");
+        }
         this.ir = new InformationRetrieval();
-        this.cd = new CallDistance();
+        this.cd = CallDistance.getInstance();
         this.modelObjectList = this.ir.getModelInfo().getObjectNameList();
         this.mappingResult = new HashMap<>();
         this.locationResult = new HashSet<>();
         setLocationResult();
-        this.parseXmi = new ParseXmi(transformConf.get("sequenceDiagramXmiPath") + transformConf.get("sequenceDiagramXmiName") + ".xml");
+        this.parseXmi = new ParseXmi(this.sdXMIPath);
         this.modelObjRelatedMsg = new HashMap<>();
         setObjectRelatedMessage();
     }

@@ -16,7 +16,7 @@ import java.util.Map;
  */
 public class URLPathClassLoader{
 
-    private Map<String, String> conf;
+    private Map<String, String> locConf;
 
     private File root;
 
@@ -25,8 +25,13 @@ public class URLPathClassLoader{
     private ClassLoader classLoader;
 
     private void init() {
-        this.conf = LocConfConstant.getLocConf();
-        this.root = new File(this.conf.get("checkProjectClassPath"));
+        this.locConf = LocConfConstant.getLocConf();
+        int proCase = Integer.parseInt(this.locConf.get("proCase"));
+        if(proCase == 1) {
+            this.root = new File(this.locConf.get("checkATMProjectClassPath"));
+        } else if(proCase == 2) {
+            this.root = new File(this.locConf.get("checkOMHProjectClassPath"));
+        }
         try {
             this.urls = new URL[]{this.root.toURI().toURL()};
         } catch (MalformedURLException e) {

@@ -1,9 +1,15 @@
 package com.graduate.zl.traceability.callGraph.codeParse;
 
+import com.graduate.zl.traceability.common.LocConfConstant;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.generic.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Map;
 
 
 /**
@@ -19,11 +25,41 @@ public class MethodVisitor extends EmptyVisitor  {
     private String DegreeClass;
     private String DegreeMethod;
 
+    private String methodCallFilePath;
+
+    private Map<String, String> locConf;
+
+    private void init() {
+        this.locConf = LocConfConstant.getLocConf();
+        int proCase = Integer.parseInt(this.locConf.get("proCase"));
+        if(proCase == 1) {
+            this.methodCallFilePath = this.locConf.get("methodCallFilePath") + this.locConf.get("methodCallFileNameOfATM");
+        } else if(proCase == 2) {
+            this.methodCallFilePath = this.locConf.get("methodCallFilePath") + this.locConf.get("methodCallFileNameOfOMH");
+        }
+        createFile();
+    }
+
+    private void createFile() {
+        File file = new File(this.methodCallFilePath);
+        try {
+            if(!file.exists()) {
+                file.createNewFile();
+            }
+            FileWriter writer = new FileWriter(file);
+            writer.write("");
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public MethodVisitor(MethodGen m, JavaClass jc) {
         visitedClass = jc;
         mg = m;
         cp = mg.getConstantPool();
-
+        init();
     }
 
     public void start() {
@@ -50,7 +86,8 @@ public class MethodVisitor extends EmptyVisitor  {
         String formatInternal = "%s";
         this.DegreeClass = String.format(formatInternal,i.getReferenceType(cp));
         this.DegreeMethod = i.getMethodName(cp);
-        logger.info(visitedClass.getClassName() + ":" + mg.getName() + " CALL " + this.DegreeClass + ":" + this.DegreeMethod);
+        String content = visitedClass.getClassName() + ":" + mg.getName() + " CALL " + this.DegreeClass + ":" + this.DegreeMethod;
+        logger.info(content);
         System.out.println(visitedClass.getClassName() + ":" + mg.getName() + " CALL " + this.DegreeClass + ":" + this.DegreeMethod);
     }
 

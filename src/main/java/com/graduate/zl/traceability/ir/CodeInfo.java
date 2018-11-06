@@ -4,6 +4,7 @@ import com.graduate.zl.common.classLoader.URLPathClassLoader;
 import com.graduate.zl.traceability.common.LocConfConstant;
 import lombok.Getter;
 import lombok.Setter;
+import org.omg.CORBA.CODESET_INCOMPATIBLE;
 
 import java.io.File;
 import java.lang.reflect.Method;
@@ -58,12 +59,21 @@ public class CodeInfo {
         this.locConf = LocConfConstant.getLocConf();
         this.moduleBlackList = this.locConf.get("module_black_list").split("&");
         this.moduleName = this.locConf.get("target_module");
-        projectDirPath = this.locConf.get("projectDirPath");
+        int proCase = Integer.parseInt(this.locConf.get("proCase"));
+        if(proCase == 1) {
+            projectDirPath = this.locConf.get("ATMProjectDirPath");
+        } else if(proCase == 2) {
+            projectDirPath = this.locConf.get("OMHProjectDirPath");
+        }
 
         String[] packageMid = this.locConf.get("packageMid").split("&");
         StringBuilder sb = new StringBuilder();
         sb.append(projectDirPath+"\\"); //在不同操作系统上是不一致的，可能为/或者\\
-        sb.append(this.moduleName);
+        if(fileExist(sb.toString()+this.moduleName)) {
+            sb.append(this.moduleName);
+        } else {
+            this.moduleName = "src";
+        }
         for(String str : packageMid) {
             sb.append("\\").append(str);
         }
@@ -76,9 +86,25 @@ public class CodeInfo {
         this.clazzMapInnerClass = new HashMap<>();
     }
 
-    public CodeInfo() {
+    private static class CodeInfoInstance{
+        private static final CodeInfo INSTANCE = new CodeInfo();
+    }
+
+    public static CodeInfo getInstance() {
+        return CodeInfoInstance.INSTANCE;
+    }
+
+    private CodeInfo() {
         init();
         buildMapInfo();
+    }
+
+    private boolean  fileExist(String path) {
+        File tmp = new File(path);
+        if(!tmp.exists()) {
+            return false;
+        }
+        return true;
     }
 
     public void getModuleList(File folder) {
@@ -216,8 +242,22 @@ public class CodeInfo {
         }
     }
 
+    public void printAllClass() {
+        for(String packageName : this.getPackageMapClazzs().keySet()) {
+            for(String className : this.getPackageMapClazzs().get(packageName)) {
+                System.out.println(packageName+"."+className);
+            }
+        }
+        for(String className : this.getClazzMapInnerClass().keySet()) {
+            for(String innerClassName : this.getClazzMapInnerClass().get(className)) {
+                System.out.println(innerClassName);
+            }
+        }
+    }
+
     public static void main(String[] args) {
-        CodeInfo getInfo = new CodeInfo();
-        getInfo.printInfo();
+        CodeInfo getInfo = CodeInfo.getInstance();
+//        getInfo.printInfo();
+        getInfo.printAllClass();
     }
 }

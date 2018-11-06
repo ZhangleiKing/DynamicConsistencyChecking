@@ -17,17 +17,19 @@ public class Locate {
 
     private InformationRetrieval ir;
 
-    private CallDistance cd;
-
     private Map<String, String> locConf;
 
     private String locationResultFilePath;
 
     private void init() {
         this.locConf = LocConfConstant.getLocConf();
-        this.locationResultFilePath = this.locConf.get("locationResultFilePath")+this.locConf.get("locationResultFileName");
+        int proCase = Integer.parseInt(this.locConf.get("proCase"));
+        if(proCase == 1) {
+            this.locationResultFilePath = this.locConf.get("locationResultFilePath")+this.locConf.get("locationResultFileNameOfATM");
+        } else if(proCase == 2) {
+            this.locationResultFilePath = this.locConf.get("locationResultFilePath") + this.locConf.get("locationResultFileNameOfOMH");
+        }
         this.ir = new InformationRetrieval();
-        this.cd = new CallDistance();
     }
 
     public Locate() {

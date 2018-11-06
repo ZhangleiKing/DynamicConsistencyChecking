@@ -2,6 +2,7 @@ package com.graduate.zl.traceability.ir;
 
 import com.graduate.zl.sd2Lts.common.Constants;
 import com.graduate.zl.sd2Lts.common.TransformConstant;
+import com.graduate.zl.traceability.common.LocConfConstant;
 import lombok.Getter;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -27,16 +28,32 @@ public class ModelInfo {
 
     private String modelFileFullPath;
 
-    private Map<String, String> conf;
+    private Map<String, String> transConf;
+
+    private Map<String, String> locConf;
 
     private void init() {
         this.objectNameList = new ArrayList<>();
         this.messageNameList = new ArrayList<>();
-        this.conf = TransformConstant.getTransformConf();
-        this.modelFileFullPath = this.conf.get("sequenceDiagramXmiPath") + this.conf.get("sequenceDiagramXmiName") + ".xml";
+        this.transConf = TransformConstant.getTransformConf();
+        this.locConf = LocConfConstant.getLocConf();
+        int proCase = Integer.parseInt(this.locConf.get("proCase"));
+        if(proCase == 1) {
+            modelFileFullPath = this.transConf.get("ATMSequenceDiagramXmiPath") + this.transConf.get("ATMSequenceDiagramXmiName");
+        } else if(proCase == 2) {
+            modelFileFullPath = this.transConf.get("OMHSequenceDiagramXmiPath") + this.transConf.get("OMHSequenceDiagramXmiName");
+        }
     }
 
-    public ModelInfo() {
+    private static class ModelInfoInstance{
+        private static final ModelInfo INSTANCE = new ModelInfo();
+    }
+
+    public static ModelInfo getInstance() {
+        return ModelInfoInstance.INSTANCE;
+    }
+
+    private ModelInfo() {
         init();
         parseInfo();
     }
@@ -72,7 +89,7 @@ public class ModelInfo {
     }
 
     public static void main(String[] args) {
-        ModelInfo gm = new ModelInfo();
+        ModelInfo gm = ModelInfo.getInstance();
         for(String objectName: gm.getObjectNameList())
             System.out.println(objectName);
         for(String msgName : gm.getMessageNameList())

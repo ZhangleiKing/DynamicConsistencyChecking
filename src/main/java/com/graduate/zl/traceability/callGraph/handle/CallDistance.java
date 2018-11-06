@@ -75,7 +75,15 @@ public class CallDistance {
         return ret;
     }
 
-    public CallDistance() {
+    private static class CallDistanceInstance{
+        private static final CallDistance INSTANCE = new CallDistance();
+    }
+
+    public static CallDistance getInstance() {
+        return CallDistanceInstance.INSTANCE;
+    }
+
+    private CallDistance() {
         init();
         calculateDistance();
     }
@@ -129,7 +137,7 @@ public class CallDistance {
     }
 
     public static void main(String[] args) {
-        CallDistance cd = new CallDistance();
+        CallDistance cd = CallDistance.getInstance();
         for(int i=1;i<cd.getDistance().length;i++) {
             for(int j=1;j<cd.getDistance().length;j++) {
                 System.out.print(cd.getDistance()[i][j]+" ");

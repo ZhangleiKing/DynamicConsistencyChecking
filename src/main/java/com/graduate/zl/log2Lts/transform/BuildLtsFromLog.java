@@ -6,6 +6,7 @@ import com.graduate.zl.common.model.Lts.LTransition;
 import com.graduate.zl.common.model.Lts.LTransitionLabel;
 import com.graduate.zl.common.util.LtsUtil;
 import com.graduate.zl.sd2Lts.common.TransformConstant;
+import com.graduate.zl.traceability.common.LocConfConstant;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -26,11 +27,20 @@ public class BuildLtsFromLog {
 
     private AtomicInteger count = new AtomicInteger(0);
 
-    private Map<String, String> conf;
+    private Map<String, String> transConf;
+
+    private Map<String, String> locConf;
 
     private void init() {
-        this.conf = TransformConstant.getTransformConf();
-        this.logFilePath = this.conf.get("logFullPath") + this.conf.get("handledLogName");
+        this.transConf = TransformConstant.getTransformConf();
+        this.locConf = LocConfConstant.getLocConf();
+        int proCase = Integer.parseInt(this.locConf.get("proCase"));
+        if(proCase == 1) {
+            this.logFilePath = this.transConf.get("ATMLogFullPath") + this.transConf.get("handledLogName");
+        } else if(proCase == 2){
+            this.logFilePath = this.transConf.get("OMHLogFullPath") + this.transConf.get("handledLogName");
+        }
+
     }
 
     public BuildLtsFromLog() {

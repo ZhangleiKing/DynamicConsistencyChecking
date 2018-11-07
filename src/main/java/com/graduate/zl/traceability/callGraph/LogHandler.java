@@ -1,6 +1,7 @@
 package com.graduate.zl.traceability.callGraph;
 
 import com.graduate.zl.sd2Lts.common.TransformConstant;
+import com.graduate.zl.traceability.common.LocConfConstant;
 
 import java.io.*;
 import java.security.MessageDigest;
@@ -20,14 +21,24 @@ public class LogHandler {
 
     private static String logFullPath;
 
-    private static Map<String, String> conf;
+    private static Map<String, String> transConf;
+
+    private static Map<String, String> locConf;
 
     private static Map<String, List<Integer>> contentMapLineNumber = new HashMap<>();
 
     static {
-        conf = TransformConstant.getTransformConf();
-        logFullPath = conf.get("logFullPath") + conf.get("originalLogName");
-        logDirPath = conf.get("logFullPath");
+        transConf = TransformConstant.getTransformConf();
+        locConf = LocConfConstant.getLocConf();
+
+        int proCase = Integer.parseInt(locConf.get("proCase"));
+        if(proCase == 1) {
+            logDirPath = transConf.get("ATMLogFullPath");
+            logFullPath = logDirPath + transConf.get("originalLogName");
+        } else if(proCase == 2) {
+            logDirPath = transConf.get("OMHLogFullPath");
+            logFullPath = logDirPath + transConf.get("originalLogName");
+        }
     }
 
     /**
@@ -80,7 +91,7 @@ public class LogHandler {
      */
     public static String preHandleLog() {
         StringBuilder sb = new StringBuilder();
-        sb.append(logDirPath).append(conf.get("handledLogName"));
+        sb.append(logDirPath).append(transConf.get("handledLogName"));
         File preHandleLog = new File(sb.toString());
         int cnt = getOnePathNumber();
         String line = null;

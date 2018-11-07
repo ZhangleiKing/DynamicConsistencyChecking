@@ -21,7 +21,12 @@ public class ModelMappingClass {
 
     static {
         locConf = LocConfConstant.getLocConf();
-        mappingFileFullPath = locConf.get("mappingResultFilePath")+ locConf.get("mappingResultFileName");
+        int proCase = Integer.parseInt(locConf.get("proCase"));
+        if(proCase == 1) {
+            mappingFileFullPath = locConf.get("mappingResultFilePath")+ locConf.get("mappingResultFileNameOfATM");
+        } else if(proCase == 2) {
+            mappingFileFullPath = locConf.get("mappingResultFilePath")+ locConf.get("mappingResultFileNameOfOMH");
+        }
     }
 
     public static Map<String, List<String>> getModelMappingClass() {

@@ -37,6 +37,7 @@ public class CheckATM {
         System.out.println("##### Code Paths #####");
         List<List<LTSNodePath>> codePaths = LtsUtil.getAllPath(codeLTS.getStart());
         LtsUtil.printAllPath(codePaths);
+        System.out.println("Starting to check PingEcho: ");
         boolean ret = false;
         List<LTSNodePath> matchPath = null;
         for(List<LTSNodePath> modelPath : modelPaths) {

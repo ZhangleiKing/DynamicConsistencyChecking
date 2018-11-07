@@ -76,8 +76,18 @@ public class LtsConsistency {
                 return false;
         }
         if(codeLTS == null) {
-            if(mIndex < modelLTS.size())
-                return false;
+            if(mIndex < modelLTS.size()) {
+                int tt = mIndex;
+                while(tt < modelLTS.size()) {
+                    LTSNodePath remainModelNT = modelLTS.get(tt);
+                    String remainModelName = remainModelNT.getNode().getLabel();
+                    if(!remainModelName.contains("END")) {
+                        return false;
+                    }
+                    tt++;
+                }
+                return true;
+            }
         }
         LTSNodePath curModelNT = modelLTS.get(mIndex);
         String curModelName = curModelNT.getNode().getLabel();

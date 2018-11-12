@@ -7,6 +7,7 @@ import com.graduate.zl.sd2Lts.parse.ParseXmi;
 import com.graduate.zl.traceability.callGraph.handle.CallDistance;
 import com.graduate.zl.traceability.common.LocConfConstant;
 import com.graduate.zl.traceability.ir.InformationRetrieval;
+import com.graduate.zl.traceability.ir.ModelInfo;
 import lombok.Getter;
 
 import java.io.*;
@@ -156,7 +157,7 @@ public class Mapping {
         }
 
         for(String objName : this.ir.getModelObjRelatedMethod().keySet()) {
-            List<String> relatedMethodList = this.ir.getModelObjRelatedClass().get(objName);
+            List<String> relatedMethodList = this.ir.getModelObjRelatedMethod().get(objName);
             for(String fullMethod : relatedMethodList) {
                 String clazz = fullMethod.split(":")[0];
                 if(!this.getMappingResult().containsKey(objName)) {
@@ -165,6 +166,26 @@ public class Mapping {
                 if(!this.getMappingResult().get(objName).contains(clazz)) {
                     if(this.locationResult.contains(clazz)) {
                         this.getMappingResult().get(objName).add(clazz);
+                    }
+                }
+            }
+        }
+
+        for(String objName : ModelInfo.getInstance().getObjectNameList()) {
+            List<String> modelRelatedMsg = this.modelObjRelatedMsg.get(objName);
+            for(String msgName : modelRelatedMsg) {
+                List<String> relatedMethodList = this.ir.getModelMsgRelatedMethod().get(msgName);
+                if(relatedMethodList != null) {
+                    for(String fullMethod : relatedMethodList) {
+                        String clazz = fullMethod.split(":")[0];
+                        if(!this.getMappingResult().containsKey(objName)) {
+                            this.getMappingResult().put(objName, new ArrayList<>());
+                        }
+                        if(!this.getMappingResult().get(objName).contains(clazz)) {
+                            if(this.locationResult.contains(clazz)) {
+                                this.getMappingResult().get(objName).add(clazz);
+                            }
+                        }
                     }
                 }
             }

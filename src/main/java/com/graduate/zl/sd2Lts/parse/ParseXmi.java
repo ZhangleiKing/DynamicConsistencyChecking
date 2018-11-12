@@ -149,8 +149,8 @@ public class ParseXmi {
     }
 
     public static void main(String[] args) {
-        ParseXmi parseXmi = new ParseXmi("C:\\Users\\Vincent\\Desktop\\ATMPingEcho.xml");
+        ParseXmi parseXmi = new ParseXmi("E:\\tmp\\xml\\Test\\CFTestBreak.xml");
         parseXmi.parseXmi();
-        System.out.println(parseXmi.getSequenceDiagram().getLifelines().size());
+        System.out.println(parseXmi.getSequenceDiagram().getMessageList().size());
     }
 }

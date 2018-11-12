@@ -1,5 +1,6 @@
 package com.graduate.zl.traceability.callGraph.codeParse;
 
+import com.graduate.zl.common.util.FileUtil;
 import com.graduate.zl.traceability.common.LocConfConstant;
 import org.apache.bcel.classfile.ClassParser;
 
@@ -102,8 +103,8 @@ public class CallGraphMainEntry {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
         }
+        FileUtil.clearContent(this.methodCallLogPath);
     }
 
 

@@ -506,7 +506,7 @@ public class InformationRetrieval {
         InformationRetrieval ir = new InformationRetrieval();
 
         ir.printDetailResult();
-        ir.printResultClass();
+//        ir.printResultClass();
 //        ir.printCodeInfo();
     }
 }

@@ -1,30 +1,22 @@
 package com.graduate.zl.checkConsistency;
 
-import com.graduate.zl.common.Constants;
 import com.graduate.zl.common.model.Lts.LNode;
 import com.graduate.zl.common.model.Lts.LTS;
 import com.graduate.zl.common.model.Lts.LTransition;
 import com.graduate.zl.common.model.Lts.LTransitionLabel;
 import com.graduate.zl.common.model.LtsPath.LTSNodePath;
-import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.graduate.zl.common.util.CommonFunc.longestCommonSubstring;
-
 /**
  * 两条LTS分支路径之间的一致性检测算法
  */
 public class LtsConsistency {
 
-    //不一致原因
-    private static String error_cause = null;
-
     /**
-     *
      * @param modelLts
      * @param codeLts
      * @return
@@ -37,9 +29,6 @@ public class LtsConsistency {
     public static String[] checkConsistencyBtwLTS(LTS modelLts, LTS codeLts, Map<String, List<String>> modelToClass) {
         String[] ret = new String[2];
         boolean isConsistent = checkConsistency(modelLts.getStart(), codeLts.getStart(), modelToClass);
-        if(isConsistent) ret[0] = Constants.YES_STR;
-        else ret[0] = Constants.NO_STR;
-        ret[1] = error_cause;
         return ret;
     }
 
@@ -48,16 +37,14 @@ public class LtsConsistency {
     }
 
     /**
-     * 常规一致性检查（不进行约简，但要过滤CF片段产生的节点和Transition）
      * @param modelPath
      * @param codeNode
-     * @param modelToClass
+     * @param modelMapCode
      * @param checkTransition true: 检查transition；false：不检查transition
      * @param matchLevel
      * @return
      */
-    private static boolean commonCheck(List<LTSNodePath> modelPath, LNode codeNode, Map<String, List<String>> modelToClass, boolean checkTransition, int matchLevel) {
-
+    private static boolean commonCheck(List<LTSNodePath> modelPath, LNode codeNode, Map<String, List<String>> modelMapCode, boolean checkTransition, int matchLevel) {
         return false;
     }
 
@@ -65,10 +52,10 @@ public class LtsConsistency {
      * 基于搜索回溯的一致性检查
      * @param modelLTS
      * @param codeLTS
-     * @param modelToClass
+     * @param modelMapCode
      * @return
      */
-    public static boolean backtrackingCheck(List<LTSNodePath> modelLTS, LNode codeLTS, Map<String, List<String>> modelToClass, int mIndex) {
+    public static boolean backtrackingCheck(List<LTSNodePath> modelLTS, LNode codeLTS, Map<String, List<String>> modelMapCode, int mIndex) {
         if(mIndex >= modelLTS.size()) {
             if(codeLTS==null)
                 return true;
@@ -92,13 +79,13 @@ public class LtsConsistency {
         LTSNodePath curModelNT = modelLTS.get(mIndex);
         String curModelName = curModelNT.getNode().getLabel();
         //如果当前模型节点与代码节点能够映射
-        if(modelToClass.containsKey(curModelName) && modelToClass.get(curModelName).contains(codeLTS.getLabel())) {
+        if(modelMapCode.containsKey(curModelName) && modelMapCode.get(curModelName).contains(codeLTS.getLabel())) {
             //如果当前模型节点是最后一个节点
             if(mIndex == modelLTS.size()-1) {
                 LNode codeNextNode = codeLTS, preNode = codeLTS;
                 for(LNode node : codeNextNode.getNext().keySet()) {
                     codeNextNode = node;
-                    if(getBelongedModelObj(preNode.getLabel(), modelToClass).equals(getBelongedModelObj(codeNextNode.getLabel(), modelToClass))) {
+                    if(getBelongedModelObj(preNode.getLabel(), modelMapCode).equals(getBelongedModelObj(codeNextNode.getLabel(), modelMapCode))) {
                         preNode = codeNextNode;
                     }else {
                         break;
@@ -106,7 +93,7 @@ public class LtsConsistency {
                 }
                 if(preNode.getNext().size() == 0)
                     codeNextNode = null;
-                return backtrackingCheck(modelLTS, codeNextNode, modelToClass, mIndex+1);
+                return backtrackingCheck(modelLTS, codeNextNode, modelMapCode, mIndex+1);
             }else {
                 LTSNodePath nextModelNT = modelLTS.get(mIndex+1);
                 //如果当前模型节点和相邻后续节点是相同对象，则需要考虑“向前探索”
@@ -116,13 +103,13 @@ public class LtsConsistency {
                         nextCodeNode = cNode;
                         break;
                     }
-                    return backtrackingCheck(modelLTS, nextCodeNode, modelToClass, mIndex+1) ||
-                            backtrackingCheck(modelLTS, codeLTS, modelToClass, mIndex+1);
+                    return backtrackingCheck(modelLTS, nextCodeNode, modelMapCode, mIndex+1) ||
+                            backtrackingCheck(modelLTS, codeLTS, modelMapCode, mIndex+1);
                 }else {
                     //如果当前模型节点和相邻后续节点不是相同对象，则对于代码节点而言，需要考虑“一对多”实现的情况
                     LNode tmp = codeLTS;
                     //如果当前代码节点与后续节点映射为同一个对象，则一直向后查找，直到找到一个不相同的为止
-                    while(modelToClass.get(modelLTS.get(mIndex).getNode().getLabel()).contains(tmp.getLabel())) {
+                    while(modelMapCode.get(modelLTS.get(mIndex).getNode().getLabel()).contains(tmp.getLabel())) {
                         if(tmp.getNext().size() == 0) {
                             tmp = null;
                             break;
@@ -132,12 +119,12 @@ public class LtsConsistency {
                             break;
                         }
                     }
-                    return backtrackingCheck(modelLTS, tmp, modelToClass, mIndex+1);
+                    return backtrackingCheck(modelLTS, tmp, modelMapCode, mIndex+1);
                 }
             }
         }else {
             if(curModelName.contains("CF_END")) {
-                return backtrackingCheck(modelLTS, codeLTS, modelToClass, mIndex+2);
+                return backtrackingCheck(modelLTS, codeLTS, modelMapCode, mIndex+2);
             } else {
                 return false;
             }
@@ -203,26 +190,6 @@ public class LtsConsistency {
             sigPath.remove(sigPath.size() - 1);
         }
     }
-
-//    private static class LNodeAndTransition{
-//        @Getter
-//        private LNode node;
-//        @Getter
-//        private LTransition transition;
-//
-//        public LNodeAndTransition(LNode node, LTransition transition) {
-//            this.node = node;
-//            this.transition = transition;
-//        }
-//
-//        @Override
-//        public String toString() {
-//            return "LNodeAndTransition{" +
-//                    "node=" + node +
-//                    ", transition=" + transition +
-//                    '}';
-//        }
-//    }
 
     /**
      * 生产一个LTS，用于测试路径打印

@@ -88,7 +88,6 @@ public class MethodVisitor extends EmptyVisitor  {
         this.DegreeMethod = i.getMethodName(cp);
         String content = visitedClass.getClassName() + ":" + mg.getName() + " CALL " + this.DegreeClass + ":" + this.DegreeMethod;
         logger.info(content);
-        System.out.println(visitedClass.getClassName() + ":" + mg.getName() + " CALL " + this.DegreeClass + ":" + this.DegreeMethod);
     }
 
 }

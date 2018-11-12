@@ -14,7 +14,7 @@ import java.util.Scanner;
 /**
  * 跟踪过程
  */
-public class TracebilityMain {
+public class TraceabilityMain {
 
     private CallGraphMainEntry callGraphMainEntry;
 
@@ -42,7 +42,7 @@ public class TracebilityMain {
         mapping = new Mapping();
     }
 
-    public TracebilityMain() {
+    public TraceabilityMain() {
         init();
     }
 
@@ -62,6 +62,6 @@ public class TracebilityMain {
     }
 
     public static void main(String[] args) {
-        TracebilityMain tracebilityMain = new TracebilityMain();
+        TraceabilityMain tracebilityMain = new TraceabilityMain();
     }
 }

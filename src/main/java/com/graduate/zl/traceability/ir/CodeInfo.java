@@ -257,7 +257,7 @@ public class CodeInfo {
 
     public static void main(String[] args) {
         CodeInfo getInfo = CodeInfo.getInstance();
-//        getInfo.printInfo();
-        getInfo.printAllClass();
+        getInfo.printInfo();
+//        getInfo.printAllClass();
     }
 }

@@ -1,5 +1,7 @@
 package com.graduate.zl.sd2Lts.transform;
 
+import com.graduate.zl.common.model.LtsPath.LTSNodePath;
+import com.graduate.zl.common.util.LtsUtil;
 import com.graduate.zl.sd2Lts.common.Constants;
 import com.graduate.zl.common.model.Lts.LNode;
 import com.graduate.zl.common.model.Lts.LTS;
@@ -20,6 +22,8 @@ public class TransformSd2Lts {
     private LNode root = null;
 
     private int skip = 0;
+
+    private LNode LTS_END = null;
 
     public TransformSd2Lts(String sdFilePath) {
         this.sequenceDiagramPath = sdFilePath;
@@ -52,6 +56,12 @@ public class TransformSd2Lts {
                     } else if(cfType.equals(Constants.CF_TYPE_ALT)) {
                         pre = handleAltCF(firstNode, curCF, sd, k);
                         k += (skip-1);
+                    } else if(cfType.equals(Constants.CF_TYPE_LOOP)) {
+                        pre = handleLoopCF(firstNode, curCF, sd, k);
+                        k += (skip-1);
+                    } else if(cfType.equals(Constants.CF_TYPE_BREAK)) {
+                        pre = handleBreakCF(firstNode, curCF, sd, k);
+                        k += (skip-1);
                     }
                     skip = 0;
                     this.root = firstNode;
@@ -61,6 +71,12 @@ public class TransformSd2Lts {
                         k += (skip-1);
                     } else if(cfType.equals(Constants.CF_TYPE_ALT)) {
                         pre = handleAltCF(pre, curCF, sd, k);
+                        k += (skip-1);
+                    } else if(cfType.equals(Constants.CF_TYPE_LOOP)) {
+                        pre = handleLoopCF(pre, curCF, sd, k);
+                        k += (skip-1);
+                    } else if(cfType.equals(Constants.CF_TYPE_BREAK)) {
+                        pre = handleBreakCF(pre, curCF, sd, k);
                         k += (skip-1);
                     }
                     skip = 0;
@@ -213,9 +229,10 @@ public class TransformSd2Lts {
         InteractionOperand iaOpe = cf.getOperandList().get(0); //LOOP片段只有1个InteractionOperand
         List<OccurrenceSpecificationFragment> curOSF = iaOpe.getOsFragments();
         int messageNumber = curOSF.size() / 2;
+        skip += messageNumber;
 
         String condition = iaOpe.getGuard().getBody();//loop条件符合这样的形式：“n=x;n<(>)N;n+(-)=k”
-        String[] conditionPart = condition.split(";");
+        String[] conditionPart = condition.split(",");
         int initValue = Integer.parseInt(conditionPart[0].split("=")[1]),
                 maxValue = Integer.parseInt(conditionPart[1].contains("<") ? conditionPart[1].split("<")[1] : conditionPart[1].split(">")[1]);
         int step = Integer.parseInt(conditionPart[2].split("=")[1]);
@@ -233,11 +250,11 @@ public class TransformSd2Lts {
                 mv.getNext().put(curNode, new LTransition(new LTransitionLabel(curMessage.getName(), Constants.MESSAGE_TYPE, null, false)));
                 mv = curNode;
             }
-            if(k != maxValue-1) {
-                LNode cycle = new LNode(count.getAndIncrement(), gd1.getLabel());
-                mv.getNext().put(cycle, new LTransition(new LTransitionLabel(null, Constants.CF_TYPE_LOOP, null, true)));
-                mv = cycle;
-            }
+//            if(k != maxValue-1) {
+//                LNode cycle = new LNode(count.getAndIncrement(), gd1.getLabel());
+//                mv.getNext().put(cycle, new LTransition(new LTransitionLabel(null, Constants.CF_TYPE_LOOP, null, true)));
+//                mv = cycle;
+//            }
         }
         LNode loop_cf_end = new LNode(count.getAndIncrement(), Constants.LOOP_CF_END);
         mv.getNext().put(loop_cf_end, new LTransition(new LTransitionLabel(null, null, null, false)));
@@ -288,8 +305,10 @@ public class TransformSd2Lts {
             mv.getNext().put(curNode, new LTransition(new LTransitionLabel(curMsg.getName(), Constants.MESSAGE_TYPE, null, false)));
             mv = curNode;
         }
-        break_cf_end.getNext().put(mv, new LTransition(new LTransitionLabel(null, null, null, false)));
         this.skip = messageList.size()-cdMessageStartPos;
+        this.LTS_END = new LNode(count.getAndIncrement(), Constants.LTS_END_NODE);
+        mv.getNext().put(this.LTS_END, new LTransition(new LTransitionLabel(null, null, null, false)));
+        break_cf_end.getNext().put(this.LTS_END, new LTransition(new LTransitionLabel(null, null, null, false)));
         return break_cf_end;
     }
 
@@ -298,5 +317,22 @@ public class TransformSd2Lts {
         transform();
         lts.buildLts(this.root);
         return lts;
+    }
+
+    /**
+     * 测试
+     */
+    public void test() {
+        LTS ret = getLTS();
+        List<List<LTSNodePath>> allPaths = LtsUtil.getAllPath(ret.getStart());
+        LtsUtil.printAllPath(allPaths);
+    }
+
+    public static void main(String[] args) {
+        // loop测试文件  "E:\tmp\xml\Test\" + "CFTestLoop.xml
+        // break测试文件 "E:\tmp\xml\Test\" + "CFTestBreak.xml
+        String testPath = "E:\\tmp\\xml\\Test\\" + "CFTestBreak.xml";
+        TransformSd2Lts transformSd2Lts = new TransformSd2Lts(testPath);
+        transformSd2Lts.test();
     }
 }

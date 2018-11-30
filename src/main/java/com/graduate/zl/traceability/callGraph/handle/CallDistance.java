@@ -17,6 +17,7 @@ public class CallDistance {
     @Getter
     private int[][] distance;
 
+    @Getter
     private PreHandleCG preHandleCG;
 
     private int methodNodeNum;
@@ -53,6 +54,11 @@ public class CallDistance {
         }
     }
 
+    /**
+     * 获取输入方法名的对应数字序号
+     * @param methodName
+     * @return
+     */
     private int getNum(String methodName) {
         int ret = -1;
         for(String mn : this.preHandleCG.getMethodCallNodes().keySet()) {
@@ -64,6 +70,11 @@ public class CallDistance {
         return ret;
     }
 
+    /**
+     * 与上述方法相反，获取输入数字序号对应的方法名
+     * @param num
+     * @return
+     */
     private String getMethodName(int num) {
         String ret = null;
         for(String mn : this.preHandleCG.getMethodCallNodes().keySet()) {
@@ -88,6 +99,9 @@ public class CallDistance {
         calculateDistance();
     }
 
+    /**
+     * 计算方法间距离
+     */
     public void calculateDistance() {
         for(int k=1; k<=this.methodNodeNum; k++) {
             for(int i=1; i<=this.methodNodeNum; i++) {
@@ -107,8 +121,10 @@ public class CallDistance {
      */
     public List<String> getRelatedMethodsForLocation(String method) {
         List<String> ret = new ArrayList<>();
-        if(!this.preHandleCG.getMethodCallNodes().containsKey(method))
+        if(!this.preHandleCG.getMethodCallNodes().containsKey(method)) {
+            System.out.println("Not include this method in methodCallLog: "+ method);
             return null;
+        }
         int num1 = this.preHandleCG.getMethodCallNodes().get(method);
         for(int i=1; i<=this.methodNodeNum; i++) {
             if(i != num1 && this.distance[num1][i] < this.locationValidCallDistance) {
@@ -145,7 +161,7 @@ public class CallDistance {
             System.out.println("");
         }
         System.out.println("-------------------------");
-        List<String> re = cd.getRelatedMethodsForLocation("com.atm.rd.client.Client:sendPing");
+        List<String> re = cd.getRelatedMethodsForMapping("com.atm.rd.server.service.FaultService:handleException");
         for(String mm : re) {
             System.out.println(mm);
         }

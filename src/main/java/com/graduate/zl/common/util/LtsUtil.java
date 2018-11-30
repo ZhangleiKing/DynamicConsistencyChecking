@@ -1,6 +1,5 @@
 package com.graduate.zl.common.util;
 
-import com.graduate.zl.checkConsistency.LtsConsistency;
 import com.graduate.zl.common.model.Lts.LNode;
 import com.graduate.zl.common.model.LtsPath.LTSNodePath;
 

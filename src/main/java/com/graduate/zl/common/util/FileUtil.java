@@ -9,6 +9,10 @@ import java.io.IOException;
  */
 public class FileUtil {
 
+    /**
+     * 清除文件内容
+     * @param filePath
+     */
     public static void clearContent(String filePath) {
         File file = new File(filePath);
         FileWriter writer = null;

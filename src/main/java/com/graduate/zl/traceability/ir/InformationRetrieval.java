@@ -1,6 +1,9 @@
 package com.graduate.zl.traceability.ir;
 
 import com.graduate.zl.common.util.CommonFunc;
+import com.graduate.zl.sd2Lts.common.TransformConstant;
+import com.graduate.zl.sd2Lts.model.SeqDiagram.Message;
+import com.graduate.zl.sd2Lts.parse.ParseXmi;
 import com.graduate.zl.traceability.callGraph.handle.CallDistance;
 import com.graduate.zl.traceability.common.LocConfConstant;
 import lombok.Getter;
@@ -53,6 +56,8 @@ public class InformationRetrieval {
 
     private Map<String, String> locConf;
 
+    private Map<String, String> transConf;
+
     private int matchLevel;
 
     @Getter
@@ -66,14 +71,25 @@ public class InformationRetrieval {
 
     private CallDistance cd;
 
+    private String sdXMIPath;
+
+    private ParseXmi parseXmi;
+
+    @Getter
+    //模型中元素发起的消息
+    private Map<String, List<String>> modelObjRelatedMsg;
+
     public void init() {
         this.locConf = LocConfConstant.getLocConf();
+        this.transConf = TransformConstant.getTransformConf();
         int proCase = Integer.parseInt(this.locConf.get("proCase"));
-        this.matchLevel = Integer.parseInt(this.locConf.get("module_match_level"));
+        this.matchLevel = Integer.parseInt(this.locConf.get("match_level"));
         if(proCase == 1) {
             this.keyATSWords = this.locConf.get("keyATMWords").split("&");
+            this.sdXMIPath = this.transConf.get("ATMSequenceDiagramXmiPath") + this.transConf.get("ATMSequenceDiagramXmiName");
         } else if(proCase == 2) {
             this.keyATSWords = this.locConf.get("keyOMHWords").split("&");
+            this.sdXMIPath = this.transConf.get("OMHSequenceDiagramXmiPath") + this.transConf.get("OMHSequenceDiagramXmiName");
         }
 
         this.modelInfo = ModelInfo.getInstance();
@@ -91,12 +107,61 @@ public class InformationRetrieval {
         this.resultClass = new HashSet<>();
 
         this.cd = CallDistance.getInstance();
+
+        this.parseXmi = new ParseXmi(this.sdXMIPath);
+        this.modelObjRelatedMsg = new HashMap<>();
+        setObjectRelatedMessage();
     }
 
-    public InformationRetrieval() {
+    private InformationRetrieval() {
         init();
         executeIR();
         setResultClass();
+    }
+
+    private static class InformationRetrievalInstance{
+        private static final InformationRetrieval INSTANCE = new InformationRetrieval();
+    }
+
+    public static InformationRetrieval getInstance() {
+        return InformationRetrievalInstance.INSTANCE;
+    }
+
+    /**
+     * 设置模型对象与其对应的消息名称（即消息的sender）
+     */
+    private void setObjectRelatedMessage() {
+        this.parseXmi.parseXmi();
+        for(Message msg : this.parseXmi.getSequenceDiagram().getMessageList()) {
+            String sender = msg.getSenderOrReceiverName(this.parseXmi.getSequenceDiagram(), true);
+            if(!this.getModelObjRelatedMsg().containsKey(sender)) {
+                this.getModelObjRelatedMsg().put(sender, new ArrayList<>());
+            }
+            this.getModelObjRelatedMsg().get(sender).add(msg.getName());
+        }
+    }
+
+    /**
+     * 获取输入消息的所属对象名称
+     * 由于可能存在消息同名，因此返回一个List；但通常只有一个目标对象
+     * @param msgName
+     * @return
+     */
+    private List<String> getMsgBelongedObj(String msgName) {
+        List<String> ret = null;
+        for(String objName : this.modelObjRelatedMsg.keySet()) {
+            List<String> msgList = this.modelObjRelatedMsg.get(objName);
+            for(String tmpMsgName : msgList) {
+                if(msgName.equals(tmpMsgName)) {
+                    if(ret == null) {
+                        ret = new ArrayList<>();
+                    }
+                    ret.add(objName);
+                    break;
+                }
+            }
+        }
+        return ret;
     }
 
     /**
@@ -194,7 +259,7 @@ public class InformationRetrieval {
                                 if(!this.atsRelatedMethod.containsKey(kaw)) {
                                     this.atsRelatedMethod.put(kaw, new ArrayList<>());
                                 }
-                                this.atsRelatedMethod.get(kaw).add(fullClassName+":"+methodName);
+                                this.atsRelatedMethod.get(kaw).add(fullClassName+":"+mn);
                             }
                         }
                         for(String mon : modelInfo.getObjectNameList()) {
@@ -203,7 +268,7 @@ public class InformationRetrieval {
                                 if(!this.modelObjRelatedMethod.containsKey(mon)) {
                                     this.modelObjRelatedMethod.put(mon, new ArrayList<>());
                                 }
-                                this.modelObjRelatedMethod.get(mon).add(fullClassName+":"+methodName);
+                                this.modelObjRelatedMethod.get(mon).add(fullClassName+":"+mn);
                             }
                         }
                         for(String mmn : modelInfo.getMessageNameList()) {
@@ -212,14 +277,14 @@ public class InformationRetrieval {
                                 if(!this.modelMsgRelatedMethod.containsKey(mmn)) {
                                     this.modelMsgRelatedMethod.put(mmn, new ArrayList<>());
                                 }
-                                this.modelMsgRelatedMethod.get(mmn).add(fullClassName+":"+methodName);
+                                this.modelMsgRelatedMethod.get(mmn).add(fullClassName+":"+mn);
                             }
                         }
                     }
                 }
             }
         }
-        processByCG();
+//        processByCG();
     }
 
     /**
@@ -238,6 +303,7 @@ public class InformationRetrieval {
                             String tt = cdRelatedMethod.split(":")[0];
                             if(!this.resultClass.contains(tt)) {
                                 this.resultClass.add(tt);
+                                //System.out.println("ATS keyWord: " + key + ", code class: " + tt);
                             }
                         }
                     }
@@ -255,6 +321,7 @@ public class InformationRetrieval {
                             String tt = cdRelatedMethod.split(":")[0];
                             if(!this.resultClass.contains(tt)) {
                                 this.resultClass.add(tt);
+                                System.out.println("Model Object keyWord: " + key +", code class: " + tt);
                             }
                         }
                     }
@@ -272,6 +339,7 @@ public class InformationRetrieval {
                             String tt = cdRelatedMethod.split(":")[0];
                             if(!this.resultClass.contains(tt)) {
                                 this.resultClass.add(tt);
+                                System.out.println("Model Message keyWord: " + key + ", Model Object: "+getMsgBelongedObj(key).get(0) + ", code class: " + tt);
                             }
                         }
                     }
@@ -369,6 +437,9 @@ public class InformationRetrieval {
         }
     }
 
+    /**
+     * 打印详细结果
+     */
     private void printDetailResult() {
         System.out.println("#####-----Package Level-----#####");
         for(String keyWord : this.atsRelatedPackage.keySet()) {
@@ -394,7 +465,7 @@ public class InformationRetrieval {
             }
         }
         for(String keyWord : this.modelMsgRelatedPackage.keySet()) {
-            System.out.println("<Model Message keyWord: "+keyWord+">");
+            System.out.println("<Model Message keyWord: "+keyWord+", belonged to "+ getMsgBelongedObj(keyWord)+">");
             List<String> packageNames = this.modelMsgRelatedPackage.get(keyWord);
             if(packageNames != null) {
                 for(String packageName : packageNames) {
@@ -431,7 +502,7 @@ public class InformationRetrieval {
             }
         }
         for(String keyWord : this.modelMsgRelatedClass.keySet()) {
-            System.out.println("<Model Message keyWord: "+keyWord+">");
+            System.out.println("<Model Message keyWord: "+keyWord+", belonged to "+ getMsgBelongedObj(keyWord)+">");
             List<String> classNames = this.modelMsgRelatedClass.get(keyWord);
             if(classNames != null) {
                 for(String className : classNames) {
@@ -468,7 +539,7 @@ public class InformationRetrieval {
             }
         }
         for(String keyWord : this.modelMsgRelatedMethod.keySet()) {
-            System.out.println("<Model Message keyWord: "+keyWord+">");
+            System.out.println("<Model Message keyWord: "+keyWord+", belonged to "+ getMsgBelongedObj(keyWord)+">");
             List<String> methodNames = this.modelMsgRelatedMethod.get(keyWord);
             if(methodNames != null) {
                 for(String methodName : methodNames) {
@@ -482,6 +553,7 @@ public class InformationRetrieval {
     }
 
     private void printResultClass() {
+        System.out.println("*****.....printResultClass().....*****");
         for(String clazz : this.getResultClass()) {
             System.out.println(clazz);
         }
@@ -506,7 +578,7 @@ public class InformationRetrieval {
         InformationRetrieval ir = new InformationRetrieval();
 
         ir.printDetailResult();
-//        ir.printResultClass();
+        ir.printResultClass();
 //        ir.printCodeInfo();
     }
 }

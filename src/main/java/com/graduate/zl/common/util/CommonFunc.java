@@ -59,7 +59,13 @@ public class CommonFunc {
         }else if(matchLevel == 2) {
             if(longestCommonSubstring(s1, s2) > 3)
                 return true;
+        } else if(matchLevel == 3) {
+            return s1.contains(s2) || s2.contains(s1) || longestCommonSubstring(s1, s2) >= 5;
         }
         return false;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(match("com.atm.rd.server.warner.monitor", "server handler", 3));
     }
 }

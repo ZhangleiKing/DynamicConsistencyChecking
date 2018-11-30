@@ -1,6 +1,5 @@
 package com.graduate.zl.traceability.location;
 
-import com.graduate.zl.traceability.callGraph.handle.CallDistance;
 import com.graduate.zl.traceability.common.LocConfConstant;
 import com.graduate.zl.traceability.ir.InformationRetrieval;
 
@@ -29,7 +28,7 @@ public class Locate {
         } else if(proCase == 2) {
             this.locationResultFilePath = this.locConf.get("locationResultFilePath") + this.locConf.get("locationResultFileNameOfOMH");
         }
-        this.ir = new InformationRetrieval();
+        this.ir = InformationRetrieval.getInstance();
     }
 
     public Locate() {
@@ -41,6 +40,9 @@ public class Locate {
         recordLocationResult();
     }
 
+    /**
+     * 记录定位的结果到文件中
+     */
     public void recordLocationResult() {
         File locationFile = new File(this.locationResultFilePath);
         FileWriter writer = null;

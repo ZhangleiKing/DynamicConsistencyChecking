@@ -62,6 +62,9 @@ public class PreHandleCG {
         preHandleCG();
     }
 
+    /**
+     * 预处理Call Graph信息，过滤依赖包的方法调用
+     */
     public void preHandleCG() {
         FileReader fr = null;
         BufferedReader br = null;
@@ -73,7 +76,7 @@ public class PreHandleCG {
 
                 String methodCaller = logContent.split("CALL")[0].trim();
                 String methodCallee = logContent.split("CALL")[1].trim();
-                if(this.checkedClasses.contains(methodCallee) && this.checkedClasses.contains(methodCaller)) {
+                if(this.checkedClasses.contains(methodCallee.split(":")[0]) && this.checkedClasses.contains(methodCaller.split(":")[0])) {
                     if(!this.methodCallMap.containsKey(methodCaller)) {
                         this.methodCallMap.put(methodCaller, new ArrayList<>());
                     }
@@ -97,8 +100,11 @@ public class PreHandleCG {
 
     public static void main(String[] args) {
         PreHandleCG ph = new PreHandleCG();
+        for(String key : ph.checkedClasses) {
+            System.out.println(key);
+        }
         for(String key : ph.getMethodCallNodes().keySet()) {
-            System.out.println(key + ": "+ ph.getMethodCallNodes().get(key));
+            System.out.println(key+": "+ph.getMethodCallNodes().get(key));
         }
     }
 }

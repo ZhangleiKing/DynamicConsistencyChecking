@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Properties;
 
 /**
- * Created by Vincent on 2017/10/11.
+ * 配置信息获取工具类
  */
 public class PropertiesAccess {
 

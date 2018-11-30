@@ -11,6 +11,7 @@ import org.dom4j.io.SAXReader;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -32,9 +33,12 @@ public class ModelInfo {
 
     private Map<String, String> locConf;
 
+    private Map<String, List<String>> modelObjMappingMsg;
+
     private void init() {
         this.objectNameList = new ArrayList<>();
         this.messageNameList = new ArrayList<>();
+        this.modelObjMappingMsg = new HashMap<>();
         this.transConf = TransformConstant.getTransformConf();
         this.locConf = LocConfConstant.getLocConf();
         int proCase = Integer.parseInt(this.locConf.get("proCase"));

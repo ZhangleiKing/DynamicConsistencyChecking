@@ -2,6 +2,9 @@ package com.graduate.zl.common.util;
 
 import java.util.Random;
 
+/**
+ * 生成随机id
+ */
 public class RandomId {
     private static Random random = new Random();
     private static String table = "0123456789";

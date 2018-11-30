@@ -59,6 +59,9 @@ public class ParseXmi {
         return document;
     }
 
+    /**
+     * 解析UML SD的xmi文件
+     */
     public void parseXmi() {
         Element root = this.document.getRootElement();
         List<Element> firstLevel = root.elements();
@@ -91,6 +94,11 @@ public class ParseXmi {
         setSequenceDiagram();
     }
 
+    /**
+     * 解析Combined Fragment
+     * CF包含InteractionOperand
+     * @param cf
+     */
     private void parseCombinedFragment(Element cf) {
         CombinedFragment ret = new CombinedFragment();
 

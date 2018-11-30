@@ -1,9 +1,6 @@
 package com.graduate.zl.traceability.map;
 
-import com.graduate.zl.common.util.CommonFunc;
 import com.graduate.zl.sd2Lts.common.TransformConstant;
-import com.graduate.zl.sd2Lts.model.SeqDiagram.Message;
-import com.graduate.zl.sd2Lts.parse.ParseXmi;
 import com.graduate.zl.traceability.callGraph.handle.CallDistance;
 import com.graduate.zl.traceability.common.LocConfConstant;
 import com.graduate.zl.traceability.ir.InformationRetrieval;
@@ -26,8 +23,6 @@ public class Mapping {
 
     private String mappingResultFilePath;
 
-    private String sdXMIPath;
-
     private InformationRetrieval ir;
 
     private CallDistance cd;
@@ -47,8 +42,6 @@ public class Mapping {
     //映射的结果
     private Map<String, List<String>> mappingResult;
 
-    private ParseXmi parseXmi;
-
     private void init() {
         this.locConf = LocConfConstant.getLocConf();
         this.transConf = TransformConstant.getTransformConf();
@@ -56,21 +49,17 @@ public class Mapping {
         if(proCase == 1) {
             this.locationResultFilePath = this.locConf.get("locationResultFilePath")+this.locConf.get("locationResultFileNameOfATM");
             this.mappingResultFilePath = this.locConf.get("mappingResultFilePath")+this.locConf.get("mappingResultFileNameOfATM");
-            this.sdXMIPath = this.transConf.get("ATMSequenceDiagramXmiPath") + this.transConf.get("ATMSequenceDiagramXmiName");
         } else if(proCase == 2) {
             this.locationResultFilePath = this.locConf.get("locationResultFilePath") + this.locConf.get("locationResultFileNameOfOMH");
             this.mappingResultFilePath = this.locConf.get("mappingResultFilePath")+this.locConf.get("mappingResultFileNameOfOMH");
-            this.sdXMIPath = this.transConf.get("OMHSequenceDiagramXmiPath") + this.transConf.get("OMHSequenceDiagramXmiName");
         }
-        this.ir = new InformationRetrieval();
+        this.ir = InformationRetrieval.getInstance();
         this.cd = CallDistance.getInstance();
         this.modelObjectList = this.ir.getModelInfo().getObjectNameList();
         this.mappingResult = new HashMap<>();
         this.locationResult = new HashSet<>();
         setLocationResult();
-        this.parseXmi = new ParseXmi(this.sdXMIPath);
-        this.modelObjRelatedMsg = new HashMap<>();
-        setObjectRelatedMessage();
+        this.modelObjRelatedMsg = this.ir.getModelObjRelatedMsg();
     }
 
     private void setLocationResult() {
@@ -90,17 +79,6 @@ public class Mapping {
         }
     }
 
-    private void setObjectRelatedMessage() {
-        this.parseXmi.parseXmi();
-        for(Message msg : this.parseXmi.getSequenceDiagram().getMessageList()) {
-            String sender = msg.getSenderOrReceiverName(this.parseXmi.getSequenceDiagram(), true);
-            if(!this.getModelObjRelatedMsg().containsKey(sender)) {
-                this.getModelObjRelatedMsg().put(sender, new ArrayList<>());
-            }
-            this.getModelObjRelatedMsg().get(sender).add(msg.getName());
-        }
-    }
-
     public Mapping() {
         init();
         process();
@@ -113,35 +91,35 @@ public class Mapping {
 
     private void mappingHandle() {
         //先添加信息检索的结果，依靠model对象名和消息名
-        for(String objName : this.ir.getModelObjRelatedPackage().keySet()) {
-            List<String> relatedPackageList = this.ir.getModelObjRelatedPackage().get(objName);
-            if(relatedPackageList != null) {
-                int maxMatch = Integer.MIN_VALUE;
-                String bestMatch = null;
-                for(String relatedPackage : relatedPackageList) {
-                    int tmp = CommonFunc.longestCommonSubstring(relatedPackage.replace(".", ""), objName.replace(" ", ""));
-                    if(tmp > maxMatch) {
-                        maxMatch = tmp;
-                        bestMatch = relatedPackage;
-                    }
-                }
-                if(bestMatch != null) {
-                    if(!this.mappingResult.containsKey(objName)) {
-                        this.mappingResult.put(objName, new ArrayList<>());
-                    }
-                    List<String> clazzes = this.ir.getCodeInfo().getPackageMapClazzs().get(bestMatch);
-                    if(clazzes != null) {
-                        for(String clazz : clazzes) {
-                            String tmp = bestMatch+"."+clazz;
-                            // mapping的结果需要基于locate的结果
-                            if(this.locationResult.contains(tmp)) {
-                                this.mappingResult.get(objName).add(tmp);
-                            }
-                        }
-                    }
-                }
-            }
-        }
+//        for(String objName : this.ir.getModelObjRelatedPackage().keySet()) {
+//            List<String> relatedPackageList = this.ir.getModelObjRelatedPackage().get(objName);
+//            if(relatedPackageList != null) {
+//                int maxMatch = Integer.MIN_VALUE;
+//                String bestMatch = null;
+//                for(String relatedPackage : relatedPackageList) {
+//                    int tmp = CommonFunc.longestCommonSubstring(relatedPackage.replace(".", ""), objName.replace(" ", ""));
+//                    if(tmp > maxMatch) {
+//                        maxMatch = tmp;
+//                        bestMatch = relatedPackage;
+//                    }
+//                }
+//                if(bestMatch != null) {
+//                    if(!this.mappingResult.containsKey(objName)) {
+//                        this.mappingResult.put(objName, new ArrayList<>());
+//                    }
+//                    List<String> clazzes = this.ir.getCodeInfo().getPackageMapClazzs().get(bestMatch);
+//                    if(clazzes != null) {
+//                        for(String clazz : clazzes) {
+//                            String tmp = bestMatch+"."+clazz;
+//                            // mapping的结果需要基于locate的结果
+//                            if(this.locationResult.contains(tmp)) {
+//                                this.mappingResult.get(objName).add(tmp);
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
         for(String objName : this.ir.getModelObjRelatedClass().keySet()) {
             List<String> relatedClassList = this.ir.getModelObjRelatedClass().get(objName);
             for(String clazz : relatedClassList) {
@@ -151,6 +129,7 @@ public class Mapping {
                 if(!this.getMappingResult().get(objName).contains(clazz)) {
                     if(this.locationResult.contains(clazz)) {
                         this.getMappingResult().get(objName).add(clazz);
+                        System.out.println("1: "+objName+", "+clazz);
                     }
                 }
             }
@@ -166,6 +145,7 @@ public class Mapping {
                 if(!this.getMappingResult().get(objName).contains(clazz)) {
                     if(this.locationResult.contains(clazz)) {
                         this.getMappingResult().get(objName).add(clazz);
+                        System.out.println("2: "+objName+", "+clazz);
                     }
                 }
             }
@@ -184,6 +164,7 @@ public class Mapping {
                         if(!this.getMappingResult().get(objName).contains(clazz)) {
                             if(this.locationResult.contains(clazz)) {
                                 this.getMappingResult().get(objName).add(clazz);
+                                System.out.println("3: "+objName+", "+clazz);
                             }
                         }
                     }
@@ -216,7 +197,8 @@ public class Mapping {
                     }
                 }
             }
-        }
+        } //call graph
+
     }
 
     private void recordMappingResult() {
@@ -259,11 +241,8 @@ public class Mapping {
             }
         }
 
-        for(String objName : mapping.getModelObjRelatedMsg().keySet()) {
+        for(String objName : mapping.getLocationResult()) {
             System.out.println("objName: "+objName);
-            for(String msg : mapping.getModelObjRelatedMsg().get(objName)) {
-                System.out.println(msg);
-            }
         }
     }
 }

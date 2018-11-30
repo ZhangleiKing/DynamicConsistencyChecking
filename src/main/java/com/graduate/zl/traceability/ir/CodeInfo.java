@@ -99,6 +99,11 @@ public class CodeInfo {
         buildMapInfo();
     }
 
+    /**
+     * 输入路径，判断该路径下的文件是否存在
+     * @param path
+     * @return
+     */
     private boolean  fileExist(String path) {
         File tmp = new File(path);
         if(!tmp.exists()) {
@@ -107,6 +112,10 @@ public class CodeInfo {
         return true;
     }
 
+    /**
+     * 获取文件夹下的所有文件列表
+     * @param folder
+     */
     public void getModuleList(File folder) {
         File[] files = folder.listFiles();
         for(int i=0, size = files.length; i<size; i++) {
@@ -127,6 +136,11 @@ public class CodeInfo {
         }
     }
 
+    /**
+     * 获取模块下对应的包以及包下对应的类
+     * @param folder
+     * @param packagePrefix
+     */
     public void getMap(File folder, String packagePrefix) {
         if(!moduleMapPackages.containsKey(this.moduleName)) {
             moduleMapPackages.put(this.moduleName, new ArrayList<>());
@@ -162,6 +176,10 @@ public class CodeInfo {
         }
     }
 
+    /**
+     * 获取类对应的内部类以及方法
+     * @param clazzName
+     */
     private void getClassMap1(String clazzName) {
         if(!this.clazzMapMethods.containsKey(clazzName)) {
             this.clazzMapMethods.put(clazzName, new ArrayList<>());
@@ -210,11 +228,17 @@ public class CodeInfo {
         }
     }
 
+    /**
+     * 该类的重要方法，集成步骤
+     */
     public void buildMapInfo() {
         getModuleList(new File(projectDirPath));
         getMap(new File(getPackageRoot()), "");
     }
 
+    /**
+     * 代码信息打印
+     */
     public void printInfo() {
         for(String moduleName : this.getModuleMapPackages().keySet()) {
             System.out.println("moduleName: "+moduleName);

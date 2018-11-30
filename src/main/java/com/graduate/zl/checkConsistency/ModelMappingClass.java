@@ -29,6 +29,10 @@ public class ModelMappingClass {
         }
     }
 
+    /**
+     * 从文件里去除元素模型与类的映射关系，存于map中
+     * @return
+     */
     public static Map<String, List<String>> getModelMappingClass() {
         Map<String, List<String>> ret = new HashMap<>();
         FileReader fr = null;

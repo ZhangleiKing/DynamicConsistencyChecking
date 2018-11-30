@@ -13,6 +13,9 @@ import com.graduate.zl.sd2Lts.parse.ParseXmi;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * 将UML时序图转换为LTS
+ */
 public class TransformSd2Lts {
 
     private String sequenceDiagramPath;
@@ -36,6 +39,10 @@ public class TransformSd2Lts {
         transform(sd);
     }
 
+    /**
+     * 转换处理
+     * @param sd
+     */
     private void transform(SequenceDiagram sd) {
         LNode pre = root;
         int nextNumber;

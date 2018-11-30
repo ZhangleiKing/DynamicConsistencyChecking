@@ -11,6 +11,7 @@ import java.util.Map;
  */
 public class LTS {
 
+    // LTS起始节点
     @Getter @Setter
     private LNode start;
 

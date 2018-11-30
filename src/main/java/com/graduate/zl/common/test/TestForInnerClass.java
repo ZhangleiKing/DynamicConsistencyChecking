@@ -3,7 +3,7 @@ package com.graduate.zl.common.test;
 import java.lang.reflect.Method;
 
 /**
- * Created by Vincent on 2018/9/27.
+ * 测试内部类
  */
 public class TestForInnerClass {
 
